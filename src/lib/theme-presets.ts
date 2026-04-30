@@ -1,0 +1,72 @@
+export type ThemePreset = {
+  id: string;
+  name: string;
+  intent: string;
+  tokens: Record<string, string>;
+};
+
+export const THEME_PRESETS: ThemePreset[] = [
+  {
+    id: "alto-padrao-neutro",
+    name: "Alto Padrão Neutro",
+    intent: "Preto suave, branco, cinza quente e acento discreto.",
+    tokens: {
+      "--color-bg": "#fbfaf7",
+      "--color-surface": "#ffffff",
+      "--color-surface-muted": "#f2eee8",
+      "--color-text": "#161616",
+      "--color-text-muted": "#65615b",
+      "--color-primary": "#20201e",
+      "--color-accent": "#866247",
+      "--color-accent-hover": "#6f5039",
+      "--color-border": "#ded8ce",
+      "--color-footer-bg": "#17191d",
+      "--color-footer-text": "#f4f0e8",
+      "--color-success": "#2f6f4e",
+      "--color-warning": "#9a6a20",
+      "--color-danger": "#9d2f2f",
+    },
+  },
+  {
+    id: "azul-confianca",
+    name: "Azul Confiança",
+    intent: "Base clara com acento azul escuro, mais institucional.",
+    tokens: {
+      "--color-bg": "#f7f9fb",
+      "--color-surface": "#ffffff",
+      "--color-surface-muted": "#edf2f7",
+      "--color-text": "#142033",
+      "--color-text-muted": "#5d6876",
+      "--color-primary": "#111b2d",
+      "--color-accent": "#264f78",
+      "--color-accent-hover": "#1d3f61",
+      "--color-border": "#d8e0e8",
+      "--color-footer-bg": "#111827",
+      "--color-footer-text": "#f5f7fb",
+      "--color-success": "#2f6f4e",
+      "--color-warning": "#94621f",
+      "--color-danger": "#983434",
+    },
+  },
+  {
+    id: "champagne-imobiliario",
+    name: "Champagne Imobiliário",
+    intent: "Off-white, dourado suave e contraste elegante.",
+    tokens: {
+      "--color-bg": "#fdf9f1",
+      "--color-surface": "#ffffff",
+      "--color-surface-muted": "#f3eadb",
+      "--color-text": "#1d1a17",
+      "--color-text-muted": "#6b6255",
+      "--color-primary": "#241f1a",
+      "--color-accent": "#9c7a3f",
+      "--color-accent-hover": "#816332",
+      "--color-border": "#e3d8c5",
+      "--color-footer-bg": "#181613",
+      "--color-footer-text": "#f8f0df",
+      "--color-success": "#2f6f4e",
+      "--color-warning": "#9a6a20",
+      "--color-danger": "#9d2f2f",
+    },
+  },
+];
