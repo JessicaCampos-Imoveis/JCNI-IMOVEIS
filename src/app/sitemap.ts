@@ -1,7 +1,36 @@
 import type { MetadataRoute } from "next";
-import { prisma } from "@/lib/prisma";
 import type { StatusImovel } from "@/generated/prisma/client";
 import { SITE_CONFIG } from "@/lib/site-config";
+
+type SitemapImovel = {
+  slugUrl: string;
+  atualizadoEm: Date;
+};
+
+async function listarImoveisIndexaveis(): Promise<SitemapImovel[]> {
+  if (!process.env.DATABASE_URL) {
+    return [];
+  }
+
+  try {
+    const { prisma } = await import("@/lib/prisma");
+
+    return await prisma.imovel.findMany({
+      where: {
+        deletadoEm: null,
+        status: { in: ["DISPONIVEL", "RESERVADO", "VENDIDO", "LOCADO"] as StatusImovel[] },
+      },
+      select: {
+        slugUrl: true,
+        atualizadoEm: true,
+      },
+      orderBy: { atualizadoEm: "desc" },
+    });
+  } catch (error) {
+    console.warn("sitemap: fallback para rotas fixas por indisponibilidade do banco.", error);
+    return [];
+  }
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = SITE_CONFIG.siteUrl.replace(/\/$/, "");
@@ -45,17 +74,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  const imoveisIndexaveis = await prisma.imovel.findMany({
-    where: {
-      deletadoEm: null,
-      status: { in: ["DISPONIVEL", "RESERVADO", "VENDIDO", "LOCADO"] as StatusImovel[] },
-    },
-    select: {
-      slugUrl: true,
-      atualizadoEm: true,
-    },
-    orderBy: { atualizadoEm: "desc" },
-  });
+  const imoveisIndexaveis = await listarImoveisIndexaveis();
 
   const rotasImoveis: MetadataRoute.Sitemap = imoveisIndexaveis.map((imovel) => ({
     url: `${baseUrl}/imoveis/${imovel.slugUrl}`,
