@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import bcrypt from "bcrypt";
+import bcryptjs from "bcryptjs";
 import { SignJWT } from "jose";
 import { prisma } from "@/lib/prisma";
 
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
 
   // Constant-time comparison even when user not found
   const hashArmazenado = usuario?.senha ?? "$2b$12$invalido.hash.para.comparar.constante";
-  const senhaCorreta = await bcrypt.compare(senha, hashArmazenado);
+  const senhaCorreta = await bcryptjs.compare(senha, hashArmazenado);
 
   if (!usuario || !senhaCorreta) {
     return NextResponse.json(

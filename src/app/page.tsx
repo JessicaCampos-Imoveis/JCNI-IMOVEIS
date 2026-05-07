@@ -1,56 +1,75 @@
 import Link from "next/link";
 import Image from "next/image";
+import type { Metadata } from "next";
 import { SITE_CONFIG } from "@/lib/site-config";
+import { prisma } from "@/lib/prisma";
+import MobileNav from "./_components/MobileNav";
 import {
   BRAND_SETTINGS,
   SITE_IMAGES,
   type ManagedSiteImage,
 } from "@/lib/site-settings";
+import { getPublicConfig } from "@/lib/config-reader";
 import { WhatsAppBubble } from "@/components/whatsapp-bubble";
+import { ChatIaWidget } from "@/components/chat-ia-widget";
 import type { CSSProperties } from "react";
+import type { Finalidade, StatusImovel, TipoImovel } from "@/generated/prisma/client";
 
-// ---------------------------------------------------------------------------
-// Fase 2: substituir demoPropertyCards por dados reais de GET /api/imoveis
-// ---------------------------------------------------------------------------
+export const metadata: Metadata = {
+  title: "Imóveis em Sorocaba — Comprar, Vender e Alugar | JCNI",
+  description: SITE_CONFIG.shortDescription,
+  alternates: { canonical: "/" },
+};
 
-const demoPropertyCards = [
-  {
-    href: "/imoveis",
-    tipo: "Apartamento",
-    finalidade: "Venda",
-    preco: "A consultar",
-    bairro: "Sorocaba",
-    features: ["2 quartos", "1 vaga", "65 m²"],
-    image: SITE_IMAGES.propertyCardApartment,
-  },
-  {
-    href: "/imoveis",
-    tipo: "Casa",
-    finalidade: "Venda",
-    preco: "A consultar",
-    bairro: "Sorocaba",
-    features: ["3 quartos", "2 vagas", "180 m²"],
-    image: SITE_IMAGES.propertyCardHouse,
-  },
-  {
-    href: "/imoveis",
-    tipo: "Apartamento",
-    finalidade: "Locação",
-    preco: "A consultar",
-    bairro: "Sorocaba",
-    features: ["1 quarto", "1 vaga", "42 m²"],
-    image: SITE_IMAGES.propertyCardInterior,
-  },
-  {
-    href: "/imoveis",
-    tipo: "Cobertura",
-    finalidade: "Venda",
-    preco: "A consultar",
-    bairro: "Sorocaba",
-    features: ["4 quartos", "3 vagas", "320 m²"],
-    image: SITE_IMAGES.propertyCardCondo,
-  },
+export const revalidate = 300;
+
+type HomeCard = {
+  id: string;
+  href: string;
+  tipoLabel: string;
+  finalidadeLabel: string;
+  statusLabel: string | null;
+  preco: string;
+  bairro: string;
+  imageUrl: string;
+  imageAlt: string;
+  features: string[];
+};
+
+type HomeTipoFiltro = "TODOS" | TipoImovel;
+
+const HOME_TIPO_TABS: Array<{ value: HomeTipoFiltro; label: string }> = [
+  { value: "TODOS", label: "Todos" },
+  { value: "APARTAMENTO", label: "Apartamentos" },
+  { value: "CASA", label: "Casas" },
+  { value: "TERRENO", label: "Terrenos" },
+  { value: "COMERCIAL", label: "Comercial" },
+  { value: "COBERTURA", label: "Coberturas" },
 ];
+
+const STATUS_LABEL: Record<StatusImovel, string> = {
+  DISPONIVEL: "Disponível",
+  RESERVADO: "Reservado",
+  VENDIDO: "Vendido",
+  LOCADO: "Locado",
+  INATIVO: "Inativo",
+};
+
+const TIPO_LABEL: Record<TipoImovel, string> = {
+  APARTAMENTO: "Apartamento",
+  CASA: "Casa",
+  TERRENO: "Terreno",
+  COMERCIAL: "Comercial",
+  COBERTURA: "Cobertura",
+  KITNET: "Kitnet",
+  RURAL: "Rural",
+};
+
+const FINALIDADE_LABEL: Record<Finalidade, string> = {
+  VENDA: "Venda",
+  ALUGUEL: "Locação",
+  AMBOS: "Venda/Locação",
+};
 
 const serviceCards = [
   {
@@ -84,25 +103,154 @@ function imageVars(image: ManagedSiteImage): CSSProperties {
   } as CSSProperties;
 }
 
-export default function Home() {
+function formatarPreco(valor: number): string {
+  return valor.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    maximumFractionDigits: 0,
+  });
+}
+
+function imagemFallbackPorTipo(tipo: TipoImovel): ManagedSiteImage {
+  if (tipo === "APARTAMENTO") return SITE_IMAGES.propertyCardApartment;
+  if (tipo === "CASA") return SITE_IMAGES.propertyCardHouse;
+  if (tipo === "COBERTURA") return SITE_IMAGES.propertyCardCondo;
+  return SITE_IMAGES.propertyCardInterior;
+}
+
+function obterTipoAtivo(valor?: string): HomeTipoFiltro {
+  const normalizado = (valor ?? "").toUpperCase();
+  if (HOME_TIPO_TABS.some((t) => t.value === normalizado)) {
+    return normalizado as HomeTipoFiltro;
+  }
+  return "TODOS";
+}
+
+async function carregarCardsHome(tipoAtivo: HomeTipoFiltro): Promise<HomeCard[]> {
+  const where = {
+    deletadoEm: null,
+    status: { in: ["DISPONIVEL", "RESERVADO", "VENDIDO", "LOCADO"] as StatusImovel[] },
+    ...(tipoAtivo !== "TODOS" ? { tipo: tipoAtivo } : {}),
+  };
+
+  const imoveis = await prisma.imovel.findMany({
+    where,
+    orderBy: { criadoEm: "desc" },
+    take: 8,
+    select: {
+      id: true,
+      slugUrl: true,
+      titulo: true,
+      tipo: true,
+      finalidade: true,
+      status: true,
+      preco: true,
+      bairro: true,
+      area: true,
+      quartos: true,
+      banheiros: true,
+      vagas: true,
+      altTexto: true,
+      fotos: {
+        select: { url: true },
+        orderBy: [{ destaque: "desc" }, { ordem: "asc" }],
+        take: 1,
+      },
+    },
+  });
+
+  return imoveis.map((imovel) => {
+    const fallback = imagemFallbackPorTipo(imovel.tipo);
+    const fotoPrincipal = imovel.fotos[0]?.url;
+
+    return {
+      id: imovel.id,
+      href: `/imoveis/${imovel.slugUrl}`,
+      tipoLabel: TIPO_LABEL[imovel.tipo],
+      finalidadeLabel: FINALIDADE_LABEL[imovel.finalidade],
+      statusLabel: imovel.status === "DISPONIVEL" ? null : STATUS_LABEL[imovel.status],
+      preco: formatarPreco(Number(imovel.preco)),
+      bairro: imovel.bairro,
+      imageUrl: fotoPrincipal ?? fallback.url,
+      imageAlt: imovel.altTexto ?? imovel.titulo,
+      features: [
+        imovel.area ? `${imovel.area} m²` : "- m²",
+        imovel.quartos != null ? `${imovel.quartos} quartos` : "- quartos",
+        imovel.banheiros != null ? `${imovel.banheiros} banheiros` : "- banheiros",
+        imovel.vagas != null ? `${imovel.vagas} vagas` : "- vagas",
+      ],
+    };
+  });
+}
+
+export default async function Home({
+  searchParams,
+}: {
+  searchParams?:
+    | { tipo?: string; finalidade?: string }
+    | Promise<{ tipo?: string; finalidade?: string }>;
+}) {
+  const [params, siteConfig] = await Promise.all([
+    Promise.resolve(searchParams ?? {}),
+    getPublicConfig(),
+  ]);
+  const tipoAtivo = obterTipoAtivo(params.tipo);
+  const cards = await carregarCardsHome(tipoAtivo);
+  const finalidadeInicial = params.finalidade === "ALUGUEL" ? "ALUGUEL" : "VENDA";
+
   const heroStyle = {
-    "--home-hero-image": `url("${SITE_IMAGES.homeHero.url}")`,
     "--portrait-image": `url("${SITE_IMAGES.jessicaPortrait.url}")`,
   } as CSSProperties;
 
+  // Foto da Jessica: usa URL do banco se disponivel, senão fallback ao arquivo estatico
+  const jessicaFotoUrl = siteConfig.jessicaFotoUrl;
+  const jessicaPortrait: ManagedSiteImage = {
+    ...SITE_IMAGES.jessicaPortrait,
+    url: jessicaFotoUrl,
+  };
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "RealEstateAgent",
+    name: "Jéssica Campos Negócios Imobiliários",
+    url: SITE_CONFIG.siteUrl,
+    description: SITE_CONFIG.shortDescription,
+    email: SITE_CONFIG.email,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Sorocaba",
+      addressRegion: "SP",
+      addressCountry: "BR",
+    },
+    areaServed: "Sorocaba e região",
+  };
+
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <SiteHeader />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <SiteHeader logoUrl={siteConfig.logoUrl} logoAlt={siteConfig.logoAlt} />
       <section className="hero-section">
-        <div className="hero-media" style={heroStyle} aria-hidden="true" />
+        <div className="hero-media" style={heroStyle} aria-hidden="true">
+          <Image
+            src={SITE_IMAGES.homeHero.url}
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            style={{ objectFit: "cover", objectPosition: "center" }}
+          />
+          <div className="hero-media-gradient" />
+        </div>
         <div className="hero-content">
           <p className="eyebrow">Jéssica Campos Negócios Imobiliários</p>
-          <h1>Encontre o imóvel certo em Sorocaba e região</h1>
+          <h1>{siteConfig.heroTitulo || "Encontre o imóvel certo em Sorocaba e região"}</h1>
           <p className="hero-copy">
-            Compra, venda e locação com atendimento consultivo, anúncios de alto
-            padrão e dados tratados com responsabilidade.
+            {siteConfig.heroSubtitulo || "Compra, venda e locação com atendimento consultivo, anúncios de alto padrão e dados tratados com responsabilidade."}
           </p>
-          <SearchPanel />
+          <SearchPanel finalidadeInicial={finalidadeInicial} />
         </div>
       </section>
 
@@ -129,21 +277,14 @@ export default function Home() {
               <p className="eyebrow">Imóveis</p>
               <h2 id="properties">Em Sorocaba e região</h2>
             </div>
-            <a className="text-link" href="/imoveis">
+            <Link className="text-link" href="/imoveis">
               Ver todos
-            </a>
+            </Link>
           </div>
 
-          <div className="type-tabs" role="tablist" aria-label="Tipo de imóvel">
-            <button className="type-tab active" type="button">Todos</button>
-            <button className="type-tab" type="button">Apartamentos</button>
-            <button className="type-tab" type="button">Casas</button>
-            <button className="type-tab" type="button">Terrenos</button>
-            <button className="type-tab" type="button">Comercial</button>
-            <button className="type-tab" type="button">Coberturas</button>
-          </div>
+          <TypeTabs tipoAtivo={tipoAtivo} />
 
-          <PropertyGrid />
+          <PropertyGrid cards={cards} />
         </div>
       </section>
 
@@ -151,9 +292,9 @@ export default function Home() {
         <div className="portrait-card">
           <div
             className="portrait-image"
-            style={imageVars(SITE_IMAGES.jessicaPortrait)}
+            style={imageVars(jessicaPortrait)}
             role="img"
-            aria-label={SITE_IMAGES.jessicaPortrait.alt}
+            aria-label={jessicaPortrait.alt}
           />
         </div>
         <div className="split-content">
@@ -197,69 +338,77 @@ export default function Home() {
       </section>
 
       <WhatsAppBubble />
+      {siteConfig.chatIaAtivo && (
+        <ChatIaWidget
+          boasVindas={siteConfig.chatIaBoasVindas}
+          ctaWhatsApp={siteConfig.chatIaCtaWhatsApp}
+          nome={siteConfig.chatIaNome}
+          whatsappNumero={siteConfig.whatsappNumero}
+        />
+      )}
       <FooterLinksband />
       <SiteFooter />
     </main>
   );
 }
 
-function SiteHeader() {
+function SiteHeader({ logoUrl, logoAlt }: { logoUrl: string; logoAlt: string }) {
   return (
     <header className="site-header">
+      <MobileNav />
       <Link className="brand" href="/" aria-label="Página inicial — JCNI">
-        <BrandMark />
-        <span>{BRAND_SETTINGS.displayName}</span>
+        <BrandMark logoUrl={logoUrl} logoAlt={logoAlt} />
       </Link>
       <nav className="nav-links" aria-label="Navegação principal">
         <div className="nav-item">
-          <a className="nav-trigger" href="/comprar">
+          <Link className="nav-trigger" href="/comprar">
             Comprar <ChevronDown />
-          </a>
+          </Link>
           <div className="nav-dropdown">
             <div className="nav-dropdown-col">
               <span className="nav-dropdown-label">Tipo de imóvel</span>
-              <a href="/comprar?tipo=apartamento">Apartamentos</a>
-              <a href="/comprar?tipo=casa">Casas</a>
-              <a href="/comprar?tipo=terreno">Terrenos</a>
-              <a href="/comprar?tipo=cobertura">Coberturas</a>
-              <a href="/comprar?tipo=comercial">Comercial</a>
+              <Link href="/comprar?tipo=apartamento">Apartamentos</Link>
+              <Link href="/comprar?tipo=casa">Casas</Link>
+              <Link href="/comprar?tipo=terreno">Terrenos</Link>
+              <Link href="/comprar?tipo=cobertura">Coberturas</Link>
+              <Link href="/comprar?tipo=comercial">Comercial</Link>
             </div>
             <div className="nav-dropdown-col">
               <span className="nav-dropdown-label">Regiões em Sorocaba</span>
-              <a href="/comprar?bairro=campolim">Campolim</a>
-              <a href="/comprar?bairro=centro">Centro</a>
-              <a href="/comprar?bairro=eden">Éden</a>
-              <a href="/comprar?bairro=wanel-ville">Wanel Ville</a>
-              <a href="/comprar?bairro=alem-ponte">Além Ponte</a>
-              <a href="/comprar?bairro=jardim-paulistano">Jd. Paulistano</a>
+              <Link href="/comprar?bairro=campolim">Campolim</Link>
+              <Link href="/comprar?bairro=centro">Centro</Link>
+              <Link href="/comprar?bairro=eden">Éden</Link>
+              <Link href="/comprar?bairro=wanel-ville">Wanel Ville</Link>
+              <Link href="/comprar?bairro=alem-ponte">Além Ponte</Link>
+              <Link href="/comprar?bairro=jardim-paulistano">Jd. Paulistano</Link>
             </div>
           </div>
         </div>
         <div className="nav-item">
-          <a className="nav-trigger" href="/alugar">
+          <Link className="nav-trigger" href="/alugar">
             Alugar <ChevronDown />
-          </a>
+          </Link>
           <div className="nav-dropdown">
             <div className="nav-dropdown-col">
               <span className="nav-dropdown-label">Tipo de imóvel</span>
-              <a href="/alugar?tipo=apartamento">Apartamentos</a>
-              <a href="/alugar?tipo=casa">Casas</a>
-              <a href="/alugar?tipo=kitnet">Kitnet / Studio</a>
-              <a href="/alugar?tipo=comercial">Comercial</a>
+              <Link href="/alugar?tipo=apartamento">Apartamentos</Link>
+              <Link href="/alugar?tipo=casa">Casas</Link>
+              <Link href="/alugar?tipo=kitnet">Kitnet / Studio</Link>
+              <Link href="/alugar?tipo=comercial">Comercial</Link>
             </div>
             <div className="nav-dropdown-col">
               <span className="nav-dropdown-label">Regiões em Sorocaba</span>
-              <a href="/alugar?bairro=campolim">Campolim</a>
-              <a href="/alugar?bairro=centro">Centro</a>
-              <a href="/alugar?bairro=eden">Éden</a>
-              <a href="/alugar?bairro=wanel-ville">Wanel Ville</a>
-              <a href="/alugar?bairro=alem-ponte">Além Ponte</a>
-              <a href="/alugar?bairro=aparecidinha">Aparecidinha</a>
+              <Link href="/alugar?bairro=campolim">Campolim</Link>
+              <Link href="/alugar?bairro=centro">Centro</Link>
+              <Link href="/alugar?bairro=eden">Éden</Link>
+              <Link href="/alugar?bairro=wanel-ville">Wanel Ville</Link>
+              <Link href="/alugar?bairro=alem-ponte">Além Ponte</Link>
+              <Link href="/alugar?bairro=aparecidinha">Aparecidinha</Link>
             </div>
           </div>
         </div>
-        <a href="/imoveis">Imóveis</a>
-        <a href="/contato">Contato</a>
+        <Link href="/imoveis">Imóveis</Link>
+        <Link href="/contato">Contato</Link>
       </nav>
       <a className="header-action" href={SITE_CONFIG.instagramUrl} target="_blank" rel="noopener noreferrer">
         Instagram
@@ -268,15 +417,16 @@ function SiteHeader() {
   );
 }
 
-function BrandMark() {
-  if (BRAND_SETTINGS.logo.imageUrl) {
+function BrandMark({ logoUrl, logoAlt }: { logoUrl: string; logoAlt: string }) {
+  if (logoUrl) {
     return (
       <Image
         className="brand-logo-image"
-        src={BRAND_SETTINGS.logo.imageUrl}
-        alt={BRAND_SETTINGS.logo.alt}
-        width={120}
-        height={34}
+        src={logoUrl}
+        alt={logoAlt}
+        width={56}
+        height={56}
+        priority
       />
     );
   }
@@ -292,47 +442,74 @@ function ChevronDown() {
   );
 }
 
-function SearchPanel() {
+function SearchPanel({ finalidadeInicial }: { finalidadeInicial: "VENDA" | "ALUGUEL" }) {
   return (
-    <form className="search-panel">
+    <form className="search-panel" action="/imoveis" method="GET">
       <div className="search-tabs" role="tablist" aria-label="Finalidade">
-        <button className="active" type="button">
+        <button className={finalidadeInicial === "VENDA" ? "active" : ""} type="submit" name="finalidade" value="VENDA">
           Comprar
         </button>
-        <button type="button">Alugar</button>
+        <button className={finalidadeInicial === "ALUGUEL" ? "active" : ""} type="submit" name="finalidade" value="ALUGUEL">Alugar</button>
       </div>
       <div className="search-row">
         <input
           type="search"
-          name="q"
+          name="busca"
           autoComplete="off"
           placeholder="Bairro, condomínio ou código do imóvel"
           aria-label="Busca de imóveis"
         />
-        <button type="submit">Buscar imóveis</button>
+        <button type="submit" name="finalidade" value={finalidadeInicial}>Buscar imóveis</button>
       </div>
     </form>
   );
 }
 
-function PropertyGrid() {
+function TypeTabs({ tipoAtivo }: { tipoAtivo: HomeTipoFiltro }) {
+  return (
+    <div className="type-tabs" role="tablist" aria-label="Tipo de imóvel">
+      {HOME_TIPO_TABS.map((tab) => (
+        <Link
+          key={tab.value}
+          href={tab.value === "TODOS" ? "/" : `/?tipo=${tab.value}`}
+          className={`type-tab ${tab.value === tipoAtivo ? "active" : ""}`}
+        >
+          {tab.label}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function PropertyGrid({ cards }: { cards: HomeCard[] }) {
+  if (cards.length === 0) {
+    return (
+      <div className="more-btn-wrap">
+        <p>Nenhum imóvel disponível para este filtro no momento.</p>
+        <Link className="more-btn" href="/imoveis">Ver todos os imóveis</Link>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="property-grid">
-        {demoPropertyCards.map((card) => (
-          <a className="property-card" href={card.href} key={card.image.id}>
+        {cards.map((card, index) => (
+          <Link className="property-card" href={card.href} key={card.id}>
             <div className="property-card-img">
               <Image
-                src={card.image.url}
-                alt={card.image.alt}
+                src={card.imageUrl}
+                alt={card.imageAlt}
                 width={900}
                 height={675}
                 sizes="(max-width: 620px) 100vw, (max-width: 920px) 50vw, 25vw"
+                priority={index === 0}
               />
             </div>
             <div className="property-card-body">
               <p className="property-card-type">
-                {card.tipo} &middot; {card.finalidade}
+                {card.tipoLabel} &middot; {card.finalidadeLabel}
+                {card.statusLabel ? ` · ${card.statusLabel}` : ""}
               </p>
               <p className="property-card-price">{card.preco}</p>
               <p className="property-card-location">{card.bairro}</p>
@@ -342,11 +519,11 @@ function PropertyGrid() {
                 ))}
               </div>
             </div>
-          </a>
+          </Link>
         ))}
       </div>
       <div className="more-btn-wrap">
-        <a className="more-btn" href="/imoveis">Ver todos os imóveis</a>
+        <Link className="more-btn" href="/imoveis">Ver todos os imóveis</Link>
       </div>
     </>
   );
@@ -357,15 +534,15 @@ function SiteFooter() {
     <footer className="site-footer">
       <div>
         <Link className="brand contrast" href="/">
-          <BrandMark />
+          <span className="brand-mark">{BRAND_SETTINGS.initials}</span>
           <span>{BRAND_SETTINGS.displayName}</span>
         </Link>
         <p>{SITE_CONFIG.shortDescription}</p>
       </div>
       <nav aria-label="Links do rodapé">
-        <a href="/imoveis">Imóveis</a>
-        <a href="/contato">Contato</a>
-        <a href="/politica-de-privacidade">Privacidade</a>
+        <Link href="/imoveis">Imóveis</Link>
+        <Link href="/contato">Contato</Link>
+        <Link href="/politica-de-privacidade">Privacidade</Link>
         <a href={SITE_CONFIG.instagramUrl} target="_blank" rel="noopener noreferrer">Instagram</a>
       </nav>
       <div>
@@ -384,41 +561,41 @@ function FooterLinksband() {
         <div className="footer-links-grid">
           <div className="footer-links-col">
             <span className="footer-links-col-heading">Apartamentos à venda</span>
-            <a href="/imoveis?finalidade=venda&tipo=apartamento&bairro=campolim">Aptos no Campolim</a>
-            <a href="/imoveis?finalidade=venda&tipo=apartamento&bairro=centro">Aptos no Centro</a>
-            <a href="/imoveis?finalidade=venda&tipo=apartamento&bairro=wanel-ville">Aptos no Wanel Ville</a>
-            <a href="/imoveis?finalidade=venda&tipo=apartamento&bairro=eden">Aptos no Éden</a>
-            <a href="/imoveis?finalidade=venda&tipo=apartamento&bairro=alem-ponte">Aptos no Além Ponte</a>
-            <a href="/imoveis?finalidade=venda&tipo=apartamento">Ver todos os aptos</a>
+            <Link href="/imoveis?finalidade=venda&tipo=apartamento&bairro=campolim">Aptos no Campolim</Link>
+            <Link href="/imoveis?finalidade=venda&tipo=apartamento&bairro=centro">Aptos no Centro</Link>
+            <Link href="/imoveis?finalidade=venda&tipo=apartamento&bairro=wanel-ville">Aptos no Wanel Ville</Link>
+            <Link href="/imoveis?finalidade=venda&tipo=apartamento&bairro=eden">Aptos no Éden</Link>
+            <Link href="/imoveis?finalidade=venda&tipo=apartamento&bairro=alem-ponte">Aptos no Além Ponte</Link>
+            <Link href="/imoveis?finalidade=venda&tipo=apartamento">Ver todos os aptos</Link>
           </div>
           <div className="footer-links-col">
             <span className="footer-links-col-heading">Casas à venda</span>
-            <a href="/imoveis?finalidade=venda&tipo=casa&bairro=campolim">Casas no Campolim</a>
-            <a href="/imoveis?finalidade=venda&tipo=casa&bairro=eden">Casas no Éden</a>
-            <a href="/imoveis?finalidade=venda&tipo=casa&bairro=wanel-ville">Casas no Wanel Ville</a>
-            <a href="/imoveis?finalidade=venda&tipo=casa&bairro=alem-ponte">Casas no Além Ponte</a>
-            <a href="/imoveis?finalidade=venda&tipo=casa&bairro=jardim-paulistano">Casas no Jd. Paulistano</a>
-            <a href="/imoveis?finalidade=venda&tipo=casa">Ver todas as casas</a>
+            <Link href="/imoveis?finalidade=venda&tipo=casa&bairro=campolim">Casas no Campolim</Link>
+            <Link href="/imoveis?finalidade=venda&tipo=casa&bairro=eden">Casas no Éden</Link>
+            <Link href="/imoveis?finalidade=venda&tipo=casa&bairro=wanel-ville">Casas no Wanel Ville</Link>
+            <Link href="/imoveis?finalidade=venda&tipo=casa&bairro=alem-ponte">Casas no Além Ponte</Link>
+            <Link href="/imoveis?finalidade=venda&tipo=casa&bairro=jardim-paulistano">Casas no Jd. Paulistano</Link>
+            <Link href="/imoveis?finalidade=venda&tipo=casa">Ver todas as casas</Link>
           </div>
           <div className="footer-links-col">
             <span className="footer-links-col-heading">Para alugar</span>
-            <a href="/imoveis?finalidade=aluguel&tipo=apartamento&bairro=centro">Aptos no Centro</a>
-            <a href="/imoveis?finalidade=aluguel&tipo=apartamento&bairro=campolim">Aptos no Campolim</a>
-            <a href="/imoveis?finalidade=aluguel&tipo=casa&bairro=eden">Casas no Éden</a>
-            <a href="/imoveis?finalidade=aluguel&tipo=casa&bairro=alem-ponte">Casas no Além Ponte</a>
-            <a href="/imoveis?finalidade=aluguel&tipo=kitnet">Kitnet / Studio</a>
-            <a href="/imoveis?finalidade=aluguel&tipo=comercial">Salas comerciais</a>
+            <Link href="/imoveis?finalidade=aluguel&tipo=apartamento&bairro=centro">Aptos no Centro</Link>
+            <Link href="/imoveis?finalidade=aluguel&tipo=apartamento&bairro=campolim">Aptos no Campolim</Link>
+            <Link href="/imoveis?finalidade=aluguel&tipo=casa&bairro=eden">Casas no Éden</Link>
+            <Link href="/imoveis?finalidade=aluguel&tipo=casa&bairro=alem-ponte">Casas no Além Ponte</Link>
+            <Link href="/imoveis?finalidade=aluguel&tipo=kitnet">Kitnet / Studio</Link>
+            <Link href="/imoveis?finalidade=aluguel&tipo=comercial">Salas comerciais</Link>
           </div>
           <div className="footer-links-col">
             <span className="footer-links-col-heading">Regiões</span>
-            <a href="/imoveis?bairro=campolim">Campolim</a>
-            <a href="/imoveis?bairro=centro">Centro de Sorocaba</a>
-            <a href="/imoveis?bairro=eden">Éden</a>
-            <a href="/imoveis?bairro=wanel-ville">Wanel Ville</a>
-            <a href="/imoveis?bairro=alem-ponte">Além Ponte</a>
-            <a href="/imoveis?bairro=aparecidinha">Aparecidinha</a>
-            <a href="/imoveis?bairro=jardim-paulistano">Jardim Paulistano</a>
-            <a href="/imoveis?bairro=santa-rosalia">Santa Rosália</a>
+            <Link href="/imoveis?bairro=campolim">Campolim</Link>
+            <Link href="/imoveis?bairro=centro">Centro de Sorocaba</Link>
+            <Link href="/imoveis?bairro=eden">Éden</Link>
+            <Link href="/imoveis?bairro=wanel-ville">Wanel Ville</Link>
+            <Link href="/imoveis?bairro=alem-ponte">Além Ponte</Link>
+            <Link href="/imoveis?bairro=aparecidinha">Aparecidinha</Link>
+            <Link href="/imoveis?bairro=jardim-paulistano">Jardim Paulistano</Link>
+            <Link href="/imoveis?bairro=santa-rosalia">Santa Rosália</Link>
           </div>
         </div>
       </div>

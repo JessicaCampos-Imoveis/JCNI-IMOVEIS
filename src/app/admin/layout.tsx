@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { jwtVerify } from "jose";
 import type { ReactNode } from "react";
+import AdminShell from "./_components/AdminShell";
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   // Login page is public — middleware handles the redirect,
@@ -19,5 +20,5 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   }
   // If no token, middleware already redirected. Layout just wraps.
 
-  return <>{children}</>;
+  return <AdminShell>{children}</AdminShell>;
 }

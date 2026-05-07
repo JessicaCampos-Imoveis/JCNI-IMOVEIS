@@ -11,11 +11,12 @@ export type ManagedSiteImage = {
 
 export const BRAND_SETTINGS = {
   displayName: "Jéssica Campos",
+  shortName: "Jéssica Campos",
   fullName: "Jéssica Campos Negócios Imobiliários",
   initials: "JCNI",
   logo: {
-    mode: "text",
-    imageUrl: "",
+    mode: "image",
+    imageUrl: "/images/logo_jcni.png",
     alt: "Logo da Jéssica Campos Negócios Imobiliários",
   },
 } as const;

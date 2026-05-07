@@ -5,18 +5,29 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
+    "build:cf": "npx @opennextjs/cloudflare build",
+    "deploy": "npx wrangler deploy",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.75",
+    "@ai-sdk/google": "^3.0.68",
+    "@ai-sdk/groq": "^3.0.38",
+    "@ai-sdk/openai": "^3.0.62",
+    "@ai-sdk/react": "^3.0.177",
     "@prisma/client": "^6.19.3",
-    "bcrypt": "^6.0.0",
+    "@supabase/storage-js": "^2.105.1",
+    "ai": "^6.0.175",
+    "bcryptjs": "^3.0.3",
     "jose": "^6.2.3",
-    "next": "15.5.15",
+    "next": "^15.5.16",
     "prisma": "^6.19.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "resend": "^6.12.2",
+    "sharp": "^0.34.5",
     "zod": "^4.4.1"
   },
   "prisma": {
@@ -24,16 +35,18 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@opennextjs/cloudflare": "^1.19.7",
     "@tailwindcss/postcss": "^4",
-    "@types/bcrypt": "^6.0.0",
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "dotenv": "^17.4.2",
     "eslint": "^9",
-    "eslint-config-next": "15.5.15",
+    "eslint-config-next": "^15.5.16",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^4.86.0"
   }
 }
