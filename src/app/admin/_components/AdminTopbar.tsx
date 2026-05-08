@@ -16,6 +16,7 @@ const NAV_LINKS: NavItem[] = [
   { href: "/admin/imoveis", label: "Imoveis" },
   { href: "/admin/leads", label: "Leads" },
   { href: "/admin/comodidades", label: "Comodidades" },
+  { href: "/admin/configuracoes", label: "Configuracoes" },
   { href: "/admin/integracoes/portais", label: "Portais XML" },
   { href: "/admin/configuracoes/chat", label: "Chat IA" },
   { href: "/", label: "Ver site", blank: true },
