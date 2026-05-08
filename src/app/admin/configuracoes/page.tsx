@@ -20,14 +20,14 @@ const TABS = [
 type TabId = (typeof TABS)[number]["id"];
 
 const TAB_DESCRIPTIONS: Record<TabId, string> = {
-  geral: "Logo, fotos, telefone, email e dados gerais do seu negócio.",
-  conteudo: "Customize os textos da página inicial e seção 'Sobre'.",
-  exibicao: "Escolha o que mostrar no site: IPTU, cômodos, link de financiamento.",
-  whatsapp: "Configure o número do WhatsApp para contato direto.",
-  notificacoes: "Email e integração com CRM para receber leads automaticamente.",
-  integracoes: "Analytics (GA4, Meta Pixel), chat ao vivo e scripts customizados.",
-  tema: "Escolha o tema visual: cores, fontes, aparência geral do site.",
-  webhooks: "Dispare ações automáticas quando algo muda (leads novos, imóvel vendido, etc).",
+  geral: "Dados básicos do negócio: nome, contato, CRECI, logo e fotos da corretora — aparecem em todo o site.",
+  conteudo: "Personalize os textos principais: título e subtítulo do hero, e a seção 'Sobre' com sua história.",
+  exibicao: "Controle o que é exibido nos anúncios: IPTU, cômodos e link de simulação de financiamento.",
+  whatsapp: "Número e mensagem padrão para o botão de contato via WhatsApp que aparece em cada imóvel.",
+  notificacoes: "Receba um e-mail a cada novo lead e configure confirmação automática para o interessado.",
+  integracoes: "Analytics (GA4, Meta Pixel, GTM), chat ao vivo (Tawk, JivoChat, Crisp), CRM e scripts personalizados.",
+  tema: "Escolha a identidade visual do site: paleta de cores, estilo geral e aparência dos botões.",
+  webhooks: "Dispare chamadas HTTP automáticas para outros sistemas quando leads chegam ou mudam de status.",
 };
 
 type Webhook = {
@@ -392,8 +392,13 @@ export default function ConfiguracoesPage() {
       {tab === "conteudo" && (
         <div className="flex flex-col gap-4">
           <p className="text-sm text-slate-600">
-            Customize os textos da página inicial (hero) e seção &quot;Sobre&quot;. Deixe em branco para usar os textos padrão do sistema.
+            Personalize os textos da página inicial e da seção &quot;Sobre&quot;. Deixe em branco para usar o conteúdo padrão do sistema. Alterações ficam visíveis no site em até 1 minuto após salvar.
           </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p className="text-xs text-blue-700">
+              💡 <strong>Hero</strong> = a primeira seção grande que o visitante vê ao abrir o site, com título, subtítulo e barra de busca de imóveis.
+            </p>
+          </div>
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium text-slate-700" htmlFor="texto_hero_titulo">
               Titulo do hero (pagina inicial)
@@ -499,6 +504,14 @@ export default function ConfiguracoesPage() {
 
       {tab === "whatsapp" && (
         <div className="flex flex-col gap-4">
+          <p className="text-sm text-slate-600">
+            Configure o botão de contato via WhatsApp que aparece em cada página de imóvel. O visitante clica e abre uma conversa já com a mensagem preenchida.
+          </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p className="text-xs text-blue-700">
+              📱 <strong>Formato do número:</strong> código do país + DDD + número, sem espaços ou traços. Exemplo para São Paulo: <code className="bg-blue-100 px-1 rounded">5511999999999</code>.
+            </p>
+          </div>
           <Field label="Numero do WhatsApp (apenas digitos)" name="whatsapp_numero" value={cfg.whatsapp_numero ?? ""} onChange={(v) => set("whatsapp_numero", v)} placeholder="5511999999999" />
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium text-slate-700" htmlFor="whatsapp_msg">
@@ -519,13 +532,18 @@ export default function ConfiguracoesPage() {
 
       {tab === "notificacoes" && (
         <div className="flex flex-col gap-4">
-          <p className="text-sm text-slate-500">
-            Configure as variaveis de email no arquivo{" "}
-            <code className="bg-slate-100 px-1 rounded">.env.local</code>:{" "}
-            <code className="bg-slate-100 px-1 rounded">RESEND_API_KEY</code>,{" "}
-            <code className="bg-slate-100 px-1 rounded">RESEND_FROM</code>,{" "}
-            <code className="bg-slate-100 px-1 rounded">NOTIFY_EMAIL</code>
+          <p className="text-sm text-slate-600">
+            Configure quando e para quem o sistema envia e-mails automáticos ao receber um novo lead.
           </p>
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+            <p className="text-xs text-amber-800 font-medium mb-1">⚙️ Pré-requisito técnico (feito uma vez)</p>
+            <p className="text-xs text-amber-700">
+              O disparo de e-mails usa o serviço Resend. As variáveis abaixo precisam estar configuradas no servidor:{" "}
+              <code className="bg-amber-100 px-1 rounded">RESEND_API_KEY</code> (chave de acesso),{" "}
+              <code className="bg-amber-100 px-1 rounded">RESEND_FROM</code> (e-mail remetente verificado) e{" "}
+              <code className="bg-amber-100 px-1 rounded">NOTIFY_EMAIL</code> (seu e-mail para receber os avisos).
+            </p>
+          </div>
           <div className="flex items-center gap-3">
             <input type="checkbox" id="notif_lead_email" checked={cfg.notif_lead_email !== "false"} onChange={(e) => set("notif_lead_email", e.target.checked ? "true" : "false")} className="w-4 h-4 accent-amber-500" />
             <label htmlFor="notif_lead_email" className="text-sm text-slate-700">Enviar email de notificacao para cada novo lead</label>
@@ -733,6 +751,19 @@ export default function ConfiguracoesPage() {
 
       {tab === "webhooks" && (
         <div className="flex flex-col gap-6">
+          <div>
+            <p className="text-sm text-slate-600">
+              Webhooks permitem que este site avise automaticamente outros sistemas (n8n, Make, Zapier, seu próprio servidor) quando algo acontece.
+            </p>
+            <div className="mt-2 bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-xs text-blue-700 font-medium mb-1">📡 Eventos disponíveis</p>
+              <ul className="text-xs text-blue-700 list-disc ml-4 space-y-1">
+                <li><strong>lead.criado</strong> — disparado a cada novo lead recebido pelo site.</li>
+                <li><strong>lead.status_alterado</strong> — disparado quando você muda o status de um lead no CRM.</li>
+              </ul>
+              <p className="text-xs text-blue-600 mt-2">O sistema envia um POST com o payload JSON do evento para a URL cadastrada. A URL deve retornar HTTP 2xx para confirmar o recebimento.</p>
+            </div>
+          </div>
           <form onSubmit={criarWebhook} className="flex flex-col gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
             <p className="text-sm font-semibold text-slate-700">Novo webhook</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

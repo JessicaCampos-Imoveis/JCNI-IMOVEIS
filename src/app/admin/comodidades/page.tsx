@@ -192,8 +192,19 @@ export default function AdminComodidadesPage() {
         <div>
           <Link href="/admin" className="breadcrumb">← Dashboard</Link>
           <h1>Comodidades</h1>
-          <p>Gerencie categorias e itens para vincular nos imóveis.</p>
+          <p>Gerencie as categorias e itens de comodidade que podem ser vinculados a cada imóvel no cadastro.</p>
         </div>
+      </div>
+
+      {/* Painel explicativo */}
+      <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 10, padding: "0.85rem 1rem", marginBottom: "1.25rem" }}>
+        <p style={{ fontWeight: 700, fontSize: "0.82rem", color: "#1d4ed8", margin: "0 0 0.35rem" }}>Como funciona</p>
+        <ul style={{ margin: 0, padding: "0 0 0 1.1rem", fontSize: "0.8rem", color: "#1e40af", lineHeight: 1.7 }}>
+          <li><strong>Categorias</strong> agrupam comodidades relacionadas (ex: &ldquo;Lazer&rdquo;, &ldquo;Segurança&rdquo;, &ldquo;Infraestrutura&rdquo;).</li>
+          <li><strong>Itens</strong> são as comodidades individuais (ex: &ldquo;Piscina&rdquo;, &ldquo;Academia&rdquo;, &ldquo;Portaria 24h&rdquo;).</li>
+          <li>Na edição de um imóvel, você poderá marcar quais dessas comodidades ele possui — elas aparecem na página pública do imóvel.</li>
+          <li>Para excluir uma categoria, remova primeiro todos os itens vinculados a ela.</li>
+        </ul>
       </div>
 
       <section className="top-controls" aria-label="Busca e cadastro rápido">

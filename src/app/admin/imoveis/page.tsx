@@ -148,6 +148,18 @@ export default function AdminImoveisPage() {
         </Link>
       </div>
 
+      {/* Painel explicativo */}
+      <div className="info-banner">
+        <p className="info-banner-titulo">Como gerenciar seus imóveis</p>
+        <ul className="info-banner-lista">
+          <li><strong>✏️ Editar</strong> — abre o formulário completo do imóvel para alterar dados, fotos, comodidades e status.</li>
+          <li><strong>👁 Ver no site</strong> — abre a landing page pública do imóvel em nova aba.</li>
+          <li><strong>🗑 Desativar</strong> — marca o imóvel como <em>Inativo</em> e o remove do site público. Os dados são mantidos e pode ser reativado.</li>
+          <li><strong>☠ Excluir permanentemente</strong> — remove o imóvel e todas as fotos do sistema. <em>Essa ação não pode ser desfeita.</em></li>
+        </ul>
+        <p className="info-banner-dica">💡 Use os filtros de status e tipo para localizar rapidamente um imóvel no acervo.</p>
+      </div>
+
       {/* Filtros */}
       <div className="filtros-bar">
         <input
@@ -369,6 +381,11 @@ export default function AdminImoveisPage() {
 
       <style>{`
         .admin-imoveis-page { padding: 1.5rem; max-width: 1200px; margin: 0 auto; }
+
+        .info-banner { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 1.25rem; }
+        .info-banner-titulo { font-weight: 700; font-size: 0.82rem; color: #1d4ed8; margin: 0 0 0.35rem; }
+        .info-banner-lista { margin: 0; padding: 0 0 0 1.1rem; font-size: 0.8rem; color: #1e40af; line-height: 1.7; }
+        .info-banner-dica { font-size: 0.78rem; color: #1e40af; margin: 0.45rem 0 0; }
 
         .page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
         .page-title { font-size: 1.5rem; font-weight: 700; margin: 0; }
