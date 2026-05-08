@@ -18,13 +18,20 @@ const quickLinks = [
 
 export default async function AdminDashboard() {
   const [imoveisTotal, imoveisDisponiveis, leadsTotal, leadsNovos, fotosTotal] =
-    await Promise.all([
-      prisma.imovel.count({ where: { deletadoEm: null } }),
-      prisma.imovel.count({ where: { status: "DISPONIVEL", deletadoEm: null } }),
-      prisma.lead.count(),
-      prisma.lead.count({ where: { status: "NOVO" } }),
-      prisma.foto.count(),
-    ]);
+    await (async () => {
+      try {
+        return await Promise.all([
+          prisma.imovel.count({ where: { deletadoEm: null } }),
+          prisma.imovel.count({ where: { status: "DISPONIVEL", deletadoEm: null } }),
+          prisma.lead.count(),
+          prisma.lead.count({ where: { status: "NOVO" } }),
+          prisma.foto.count(),
+        ]);
+      } catch (error) {
+        console.warn("admin-dashboard: fallback em contadores por indisponibilidade do banco.", error);
+        return [0, 0, 0, 0, 0] as const;
+      }
+    })();
 
   const storageEstimadoMB = Math.round((fotosTotal * AVG_FOTO_KB) / 1024);
   const storagePct = Math.min(
