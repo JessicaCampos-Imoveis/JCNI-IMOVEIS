@@ -887,6 +887,14 @@ h3 {
     font-weight: 700;
     cursor: pointer;
   }
+
+  .free-limits-head {
+    flex-direction: column;
+  }
+
+  .free-limits-row {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 @media (max-width: 420px) {
@@ -983,6 +991,91 @@ h3 {
   color: var(--color-text-muted);
   font-size: 0.84rem;
   line-height: 1.6;
+}
+
+.free-limits-panel {
+  margin-top: 16px;
+  padding: 16px 18px;
+}
+
+.free-limits-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.free-limits-updated {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.free-limits-state,
+.free-limits-error,
+.free-limits-footnote {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.free-limits-error {
+  color: #b91c1c;
+}
+
+.free-limits-table {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0 8px;
+}
+
+.free-limits-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1.1fr) minmax(90px, 0.7fr) minmax(90px, 0.7fr) minmax(90px, 0.6fr);
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-surface), transparent 10%);
+  padding: 7px 10px;
+  font-size: 0.78rem;
+}
+
+.free-limits-row span {
+  overflow-wrap: anywhere;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  min-height: 22px;
+  padding: 0 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  background: #fff;
+}
+
+.pill.ok {
+  border-color: #86efac;
+  color: #15803d;
+  background: #f0fdf4;
+}
+
+.pill.warn {
+  border-color: #fcd34d;
+  color: #92400e;
+  background: #fffbeb;
+}
+
+.pill.danger {
+  border-color: #fca5a5;
+  color: #b91c1c;
+  background: #fef2f2;
 }
 
 /* ── BANNER DE ALERTA DE ARMAZENAMENTO ── */
