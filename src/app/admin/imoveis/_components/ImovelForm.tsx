@@ -150,36 +150,203 @@ function CampoTexto({
   );
 }
 
-// ─── Campo Bairro com autocomplete via IBGE ──────────────────────────────────
-// Busca subdistritos (bairros) do municipio pelo codigo IBGE (padrao: Sorocaba).
-// O usuario pode aceitar uma sugestao ou digitar livremente.
-const IBGE_MUNICIPIO_ID = 3552205; // Sorocaba-SP
+type IbgeMunicipio = { id: number; nome: string };
 
-function CampoBairroIBGE({
+function normalizarTexto(v: string): string {
+  return v
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+function CampoCidadeIBGE({
   value,
+  estado,
   onChange,
   required,
 }: {
   value: string;
+  estado: string;
+  onChange: (v: string) => void;
+  required?: boolean;
+}) {
+  const [cidades, setCidades] = useState<IbgeMunicipio[]>([]);
+  const [sugestoes, setSugestoes] = useState<IbgeMunicipio[]>([]);
+  const [aberto, setAberto] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const uf = (estado || "SP").toUpperCase();
+    fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`)
+      .then((r) => r.json())
+      .then((data: IbgeMunicipio[]) => {
+        if (Array.isArray(data)) {
+          setCidades(data.sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")));
+        }
+      })
+      .catch(() => {
+        setCidades([]);
+      });
+  }, [estado]);
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setAberto(false);
+      }
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  function handleInput(v: string) {
+    onChange(v);
+    if (v.length >= 2 && cidades.length > 0) {
+      const q = normalizarTexto(v);
+      setSugestoes(cidades.filter((c) => normalizarTexto(c.nome).includes(q)).slice(0, 8));
+      setAberto(true);
+    } else {
+      setSugestoes([]);
+      setAberto(false);
+    }
+  }
+
+  function selecionar(cidade: string) {
+    onChange(cidade);
+    setSugestoes([]);
+    setAberto(false);
+  }
+
+  return (
+    <div className="campo" ref={wrapRef} style={{ position: "relative" }}>
+      <label className="campo-label">
+        Cidade{required && <span className="campo-req">*</span>}
+      </label>
+      <input
+        type="text"
+        name="cidade"
+        value={value}
+        onChange={(e) => handleInput(e.target.value)}
+        onFocus={() => {
+          if (value.length >= 2 && sugestoes.length > 0) setAberto(true);
+        }}
+        required={required}
+        placeholder="Digite ou selecione a cidade"
+        className="campo-input"
+        autoComplete="off"
+      />
+      {aberto && sugestoes.length > 0 && (
+        <ul style={{
+          position: "absolute",
+          zIndex: 50,
+          top: "100%",
+          left: 0,
+          right: 0,
+          background: "#fff",
+          border: "1px solid #e2e8f0",
+          borderRadius: 8,
+          boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
+          listStyle: "none",
+          margin: "2px 0 0",
+          padding: "4px 0",
+          maxHeight: 220,
+          overflowY: "auto",
+        }}>
+          {sugestoes.map((c) => (
+            <li
+              key={c.id}
+              onMouseDown={(e) => { e.preventDefault(); selecionar(c.nome); }}
+              style={{
+                padding: "8px 14px",
+                fontSize: "0.85rem",
+                cursor: "pointer",
+                color: "#1e293b",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#f1f5f9")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "")}
+            >
+              {c.nome}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+// ─── Campo Bairro com autocomplete via IBGE (dependente da cidade) ─────────
+function CampoBairroIBGE({
+  value,
+  cidade,
+  estado,
+  onChange,
+  required,
+}: {
+  value: string;
+  cidade: string;
+  estado: string;
   onChange: (v: string) => void;
   required?: boolean;
 }) {
   const [bairros, setBairros] = useState<string[]>([]);
   const [sugestoes, setSugestoes] = useState<string[]>([]);
   const [aberto, setAberto] = useState(false);
+  const [carregando, setCarregando] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
-  // Carrega bairros do IBGE na primeira renderizacao
+  // Carrega bairros a partir da cidade/UF escolhidas.
   useEffect(() => {
-    fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/municipios/${IBGE_MUNICIPIO_ID}/subdistritos`)
+    const cidadeTrim = cidade.trim();
+    if (!cidadeTrim) {
+      setBairros([]);
+      setSugestoes([]);
+      setAberto(false);
+      return;
+    }
+
+    const uf = (estado || "SP").toUpperCase();
+    const cidadeNorm = normalizarTexto(cidadeTrim);
+    let cancelado = false;
+    setCarregando(true);
+
+    fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`)
       .then((r) => r.json())
-      .then((data: { nome: string }[]) => {
-        if (Array.isArray(data)) {
-          setBairros(data.map((d) => d.nome).sort((a, b) => a.localeCompare(b, "pt-BR")));
+      .then((municipios: IbgeMunicipio[]) => {
+        const municipio = Array.isArray(municipios)
+          ? municipios.find((m) => normalizarTexto(m.nome) === cidadeNorm)
+          : null;
+
+        if (!municipio) {
+          if (!cancelado) {
+            setBairros([]);
+            setSugestoes([]);
+          }
+          return;
+        }
+
+        return fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/municipios/${municipio.id}/subdistritos`)
+          .then((r) => r.json())
+          .then((data: { nome: string }[]) => {
+            if (!cancelado && Array.isArray(data)) {
+              setBairros(data.map((d) => d.nome).sort((a, b) => a.localeCompare(b, "pt-BR")));
+            }
+          });
+      })
+      .catch(() => {
+        if (!cancelado) {
+          setBairros([]);
+          setSugestoes([]);
         }
       })
-      .catch(() => {/* silencioso — o usuario pode digitar livremente */});
-  }, []);
+      .finally(() => {
+        if (!cancelado) setCarregando(false);
+      });
+
+    return () => {
+      cancelado = true;
+    };
+  }, [cidade, estado]);
 
   // Fecha dropdown ao clicar fora
   useEffect(() => {
@@ -195,8 +362,8 @@ function CampoBairroIBGE({
   function handleInput(v: string) {
     onChange(v);
     if (v.length >= 2 && bairros.length > 0) {
-      const q = v.toLowerCase();
-      setSugestoes(bairros.filter((b) => b.toLowerCase().includes(q)).slice(0, 8));
+      const q = normalizarTexto(v);
+      setSugestoes(bairros.filter((b) => normalizarTexto(b).includes(q)).slice(0, 8));
       setAberto(true);
     } else {
       setSugestoes([]);
@@ -214,7 +381,6 @@ function CampoBairroIBGE({
     <div className="campo" ref={wrapRef} style={{ position: "relative" }}>
       <label className="campo-label">
         Bairro{required && <span className="campo-req">*</span>}
-        <span className="campo-hint" style={{ marginLeft: 6 }}>Sorocaba — IBGE</span>
       </label>
       <input
         type="text"
@@ -225,10 +391,19 @@ function CampoBairroIBGE({
           if (value.length >= 2 && sugestoes.length > 0) setAberto(true);
         }}
         required={required}
-        placeholder="Digite ou selecione o bairro"
+        placeholder={cidade.trim() ? "Digite ou selecione o bairro" : "Selecione a cidade para sugerir bairros"}
         className="campo-input"
         autoComplete="off"
       />
+      <span className="campo-hint">
+        {carregando
+          ? "Carregando bairros..."
+          : cidade.trim()
+            ? bairros.length > 0
+              ? "Digite ao menos 2 letras para sugerir bairros da cidade"
+              : "Cidade sem bairros IBGE encontrados (ou não reconhecida). Você pode digitar manualmente."
+            : "Escolha a cidade para carregar sugestões automáticas de bairro."}
+      </span>
       {aberto && sugestoes.length > 0 && (
         <ul style={{
           position: "absolute",
@@ -469,6 +644,7 @@ export function ImovelForm({ values, imovelId, onChange }: Props) {
   }
 
   const f = (field: keyof ImovelFormData) => (v: string) => onChange({ [field]: v });
+  const onCidadeChange = (v: string) => onChange({ cidade: v, bairro: "" });
 
   function numericOrUndef(v: string): number | undefined {
     const n = parseFloat(v.replace(",", "."));
@@ -592,8 +768,8 @@ export function ImovelForm({ values, imovelId, onChange }: Props) {
           </div>
 
           <div className="grid-2">
-            <CampoBairroIBGE value={values.bairro} onChange={f("bairro")} required />
-            <CampoTexto label="Cidade" name="cidade" value={values.cidade} onChange={f("cidade")} required />
+            <CampoCidadeIBGE value={values.cidade} estado={values.estado} onChange={onCidadeChange} required />
+            <CampoBairroIBGE value={values.bairro} cidade={values.cidade} estado={values.estado} onChange={f("bairro")} required />
           </div>
 
           <div className="comodidades-box">
