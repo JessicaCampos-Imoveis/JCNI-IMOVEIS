@@ -247,9 +247,9 @@ export default async function Home({
         </div>
         <div className="hero-content">
           <p className="eyebrow">Jéssica Campos Negócios Imobiliários</p>
-          <h1>{siteConfig.heroTitulo || "Encontre o imóvel certo em Sorocaba e região"}</h1>
+          <h1>{siteConfig.heroTitulo}</h1>
           <p className="hero-copy">
-            {siteConfig.heroSubtitulo || "Compra, venda e locação com atendimento consultivo, anúncios de alto padrão e dados tratados com responsabilidade."}
+            {siteConfig.heroSubtitulo}
           </p>
           <SearchPanel finalidadeInicial={finalidadeInicial} />
         </div>
@@ -300,13 +300,8 @@ export default async function Home({
         </div>
         <div className="split-content">
           <p className="eyebrow">Sobre a Jéssica</p>
-          <h2 id="about">Atendimento consultivo para decisões imobiliárias</h2>
-          <p>
-            Especialista em imóveis residenciais e comerciais em Sorocaba, a
-            Jéssica acompanha cada cliente com atenção direta — da busca ao
-            fechamento. Aqui você encontra imóveis bem descritos, fotos
-            tratadas e contato sem intermediários.
-          </p>
+          <h2 id="about">{siteConfig.sobreTitulo}</h2>
+          <p>{siteConfig.sobreCorpo}</p>
           <div className="stats-list">
             {quickStats.map(([label, value]) => (
               <div key={label}>
@@ -346,7 +341,16 @@ export default async function Home({
         />
       )}
       <FooterLinksband />
-      <SiteFooter logoUrl={siteConfig.logoUrl} logoAlt={siteConfig.logoAlt} />
+      <SiteFooter
+        logoUrl={siteConfig.logoUrl}
+        logoAlt={siteConfig.logoAlt}
+        contatoEmail={siteConfig.contatoEmail}
+        instagramUrl={siteConfig.instagramUrl}
+        facebookUrl={siteConfig.facebookUrl}
+        linkedinUrl={siteConfig.linkedinUrl}
+        tiktokUrl={siteConfig.tiktokUrl}
+        whatsappUrl={siteConfig.socialWhatsappUrl || (siteConfig.whatsappNumero ? `https://wa.me/${siteConfig.whatsappNumero}` : "")}
+      />
     </main>
   );
 }
@@ -409,9 +413,6 @@ function SiteHeader({ logoUrl, logoAlt }: { logoUrl: string; logoAlt: string }) 
         <Link href="/imoveis">Imóveis</Link>
         <Link href="/contato">Contato</Link>
       </nav>
-      <a className="header-action" href={SITE_CONFIG.instagramUrl} target="_blank" rel="noopener noreferrer">
-        Instagram
-      </a>
     </header>
   );
 }
@@ -528,7 +529,33 @@ function PropertyGrid({ cards }: { cards: HomeCard[] }) {
   );
 }
 
-function SiteFooter({ logoUrl, logoAlt }: { logoUrl: string; logoAlt: string }) {
+function SiteFooter({
+  logoUrl,
+  logoAlt,
+  contatoEmail,
+  instagramUrl,
+  whatsappUrl,
+  facebookUrl,
+  linkedinUrl,
+  tiktokUrl,
+}: {
+  logoUrl: string;
+  logoAlt: string;
+  contatoEmail: string;
+  instagramUrl: string;
+  whatsappUrl: string;
+  facebookUrl: string;
+  linkedinUrl: string;
+  tiktokUrl: string;
+}) {
+  const socialLinks = [
+    { key: "instagram", label: "Instagram", href: instagramUrl, icon: <IconInstagram /> },
+    { key: "whatsapp", label: "WhatsApp", href: whatsappUrl, icon: <IconWhatsApp /> },
+    { key: "facebook", label: "Facebook", href: facebookUrl, icon: <IconFacebook /> },
+    { key: "linkedin", label: "LinkedIn", href: linkedinUrl, icon: <IconLinkedIn /> },
+    { key: "tiktok", label: "TikTok", href: tiktokUrl, icon: <IconTikTok /> },
+  ].filter((item) => item.href);
+
   return (
     <footer className="site-footer">
       <div>
@@ -544,18 +571,78 @@ function SiteFooter({ logoUrl, logoAlt }: { logoUrl: string; logoAlt: string }) 
           </Link>
         )}
         <p>{SITE_CONFIG.shortDescription}</p>
+        {socialLinks.length > 0 && (
+          <div className="footer-socials" aria-label="Redes sociais">
+            {socialLinks.map((item) => (
+              <a
+                key={item.key}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={item.label}
+                title={item.label}
+              >
+                {item.icon}
+              </a>
+            ))}
+          </div>
+        )}
       </div>
       <nav aria-label="Links do rodapé">
         <Link href="/imoveis">Imóveis</Link>
         <Link href="/contato">Contato</Link>
         <Link href="/politica-de-privacidade">Privacidade</Link>
-        <a href={SITE_CONFIG.instagramUrl} target="_blank" rel="noopener noreferrer">Instagram</a>
       </nav>
       <div>
         <span>Contato</span>
-        <a href={`mailto:${SITE_CONFIG.email}`}>{SITE_CONFIG.email}</a>
+        <a href={`mailto:${contatoEmail}`}>{contatoEmail}</a>
       </div>
     </footer>
+  );
+}
+
+function IconInstagram() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" width="18" height="18">
+      <rect x="3" y="3" width="18" height="18" rx="5" ry="5" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <circle cx="17.3" cy="6.7" r="1" fill="currentColor" />
+    </svg>
+  );
+}
+
+function IconWhatsApp() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" width="18" height="18">
+      <path d="M20 11.8A8.8 8.8 0 0 1 6.8 19.5L3.5 20.5l1-3.1A8.8 8.8 0 1 1 20 11.8Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M9.2 8.7c.3-.7.6-.7.9-.7h.7c.2 0 .4.1.5.4l.8 1.9c.1.2 0 .4-.1.5l-.5.6c-.1.1-.2.3-.1.5.3.6 1 1.4 1.9 1.8.2.1.4 0 .5-.1l.6-.5c.2-.2.4-.2.6-.1l1.8.8c.3.1.4.3.4.5v.7c0 .3 0 .6-.7.9-.6.2-1.9.2-3.4-.6-1.6-.9-2.9-2.3-3.5-3.8-.5-1.3-.2-2.5 0-2.8Z" fill="currentColor" />
+    </svg>
+  );
+}
+
+function IconFacebook() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" width="18" height="18">
+      <path d="M13.5 21v-7h2.4l.4-2.8h-2.8V9.4c0-.8.2-1.3 1.4-1.3h1.5V5.6c-.3 0-1.1-.1-2.1-.1-2.1 0-3.5 1.3-3.5 3.7v2h-2.4V14h2.4v7h2.7Z" fill="currentColor" />
+    </svg>
+  );
+}
+
+function IconLinkedIn() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" width="18" height="18">
+      <rect x="4" y="9" width="3" height="11" fill="currentColor" />
+      <circle cx="5.5" cy="5.5" r="1.8" fill="currentColor" />
+      <path d="M10 9h2.9v1.6h.1c.4-.8 1.4-1.9 3-1.9 3.2 0 3.8 2.1 3.8 4.9V20H17v-5.6c0-1.3 0-3-1.9-3s-2.2 1.5-2.2 2.9V20H10Z" fill="currentColor" />
+    </svg>
+  );
+}
+
+function IconTikTok() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" width="18" height="18">
+      <path d="M14.6 4c.6 1.8 1.7 2.9 3.4 3.2v2.6c-1.3 0-2.4-.4-3.4-1.2V15a5 5 0 1 1-5-5c.3 0 .6 0 .9.1v2.8a2.4 2.4 0 1 0 1.7 2.3V4h2.4Z" fill="currentColor" />
+    </svg>
   );
 }
 

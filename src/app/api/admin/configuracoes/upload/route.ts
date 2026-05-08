@@ -15,6 +15,7 @@ const TIPOS_PERMITIDOS: Record<string, { chave: string; maxDim: number }> = {
   logo: { chave: "marca_logo_url", maxDim: 400 },
   foto_jessica: { chave: "marca_foto_jessica_url", maxDim: 1200 },
   foto_jessica_hero: { chave: "marca_foto_jessica_hero_url", maxDim: 1400 },
+  og_image: { chave: "og_image_url", maxDim: 1600 },
 };
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -47,7 +48,7 @@ export async function POST(req: NextRequest) {
   const tipoConfig = TIPOS_PERMITIDOS[tipo];
   if (!tipoConfig) {
     return NextResponse.json(
-      { error: "Tipo invalido. Use: logo, foto_jessica, foto_jessica_hero" },
+      { error: "Tipo invalido. Use: logo, foto_jessica, foto_jessica_hero, og_image" },
       { status: 400 },
     );
   }

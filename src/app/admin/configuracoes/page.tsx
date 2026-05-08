@@ -116,6 +116,48 @@ type Webhook = {
   ativo: boolean;
 };
 
+type ImageUploadTipo = "logo" | "foto_jessica" | "foto_jessica_hero" | "og_image";
+
+function ConteudoCard({
+  titulo,
+  descricao,
+  valor,
+  editing,
+  onToggle,
+  children,
+}: {
+  titulo: string;
+  descricao: string;
+  valor: string;
+  editing: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-xl border border-slate-200 bg-white p-4">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-slate-800">{titulo}</p>
+          <p className="mt-1 text-xs text-slate-500">{descricao}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onToggle}
+          className="shrink-0 rounded-md border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50"
+        >
+          {editing ? "Fechar" : "Editar"}
+        </button>
+      </div>
+
+      <div className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700 whitespace-pre-line">
+        {valor.trim() || "Sem conteúdo preenchido."}
+      </div>
+
+      {editing && <div className="mt-3 flex flex-col gap-3">{children}</div>}
+    </section>
+  );
+}
+
 function Field({
   label,
   name,
@@ -182,8 +224,8 @@ function ImageUploadField({
 }: {
   label: string;
   currentUrl: string;
-  tipo: "logo" | "foto_jessica" | "foto_jessica_hero";
-  onUpload: (file: File, tipo: "logo" | "foto_jessica" | "foto_jessica_hero") => Promise<void>;
+  tipo: ImageUploadTipo;
+  onUpload: (file: File, tipo: ImageUploadTipo) => Promise<void>;
   uploadMsg: { text: string; ok: boolean } | null;
 }) {
   return (
@@ -236,6 +278,7 @@ function SaveBar({ saving, onSave }: { saving: boolean; onSave: () => void }) {
 export default function ConfiguracoesPage() {
   const [tab, setTab] = useState<TabId>("geral");
   const [ajudaAberta, setAjudaAberta] = useState(false);
+  const [conteudoEditando, setConteudoEditando] = useState<Record<string, boolean>>({});
   const [cfg, setCfg] = useState<ConfigMap>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -276,6 +319,10 @@ export default function ConfiguracoesPage() {
     setCfg((prev) => ({ ...prev, [chave]: valor }));
   }
 
+  function toggleConteudoCard(id: string) {
+    setConteudoEditando((prev) => ({ ...prev, [id]: !prev[id] }));
+  }
+
   async function salvar() {
     setSaving(true);
     setMsg(null);
@@ -298,7 +345,7 @@ export default function ConfiguracoesPage() {
     }
   }
 
-  async function uploadImagem(file: File, tipo: "logo" | "foto_jessica" | "foto_jessica_hero") {
+  async function uploadImagem(file: File, tipo: ImageUploadTipo) {
     const fd = new FormData();
     fd.append("file", file);
     fd.append("tipo", tipo);
@@ -315,7 +362,9 @@ export default function ConfiguracoesPage() {
             ? "marca_logo_url"
             : tipo === "foto_jessica"
               ? "marca_foto_jessica_url"
-              : "marca_foto_jessica_hero_url";
+              : tipo === "foto_jessica_hero"
+                ? "marca_foto_jessica_hero_url"
+                : "og_image_url";
         setCfg((prev) => ({ ...prev, [chave]: data.url }));
         setUploadMsg({ tipo, text: "Imagem enviada com sucesso.", ok: true });
       } else {
@@ -445,6 +494,51 @@ export default function ConfiguracoesPage() {
           <hr className="border-slate-200" />
 
           <div className="flex flex-col gap-4">
+            <p className="text-sm font-semibold text-slate-700">Redes sociais e contatos</p>
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+              <p className="text-xs text-slate-600">
+                Estes links aparecem no rodapé público do site com os ícones oficiais. O e-mail abaixo também alimenta o contato do rodapé.
+              </p>
+            </div>
+
+            <Field
+              label="Instagram"
+              name="social_instagram_url"
+              value={cfg.social_instagram_url ?? ""}
+              onChange={(v) => set("social_instagram_url", v)}
+              placeholder="https://instagram.com/..."
+            />
+            <Field
+              label="WhatsApp (link direto opcional)"
+              name="social_whatsapp_url"
+              value={cfg.social_whatsapp_url ?? ""}
+              onChange={(v) => set("social_whatsapp_url", v)}
+              placeholder="https://wa.me/5511999999999"
+            />
+            <Field
+              label="Facebook"
+              name="social_facebook_url"
+              value={cfg.social_facebook_url ?? ""}
+              onChange={(v) => set("social_facebook_url", v)}
+              placeholder="https://facebook.com/..."
+            />
+            <Field
+              label="LinkedIn"
+              name="social_linkedin_url"
+              value={cfg.social_linkedin_url ?? ""}
+              onChange={(v) => set("social_linkedin_url", v)}
+              placeholder="https://linkedin.com/in/..."
+            />
+            <Field
+              label="TikTok"
+              name="social_tiktok_url"
+              value={cfg.social_tiktok_url ?? ""}
+              onChange={(v) => set("social_tiktok_url", v)}
+              placeholder="https://tiktok.com/@..."
+            />
+          </div>
+
+          <div className="flex flex-col gap-4">
             <p className="text-sm font-semibold text-slate-700">Imagens de marca</p>
 
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
@@ -494,102 +588,117 @@ export default function ConfiguracoesPage() {
       {tab === "conteudo" && (
         <div className="flex flex-col gap-4">
           <p className="text-sm text-slate-600">
-            Personalize os textos da página inicial e da seção &quot;Sobre&quot;. Deixe em branco para usar o conteúdo padrão do sistema. Alterações ficam visíveis no site em até 1 minuto após salvar.
+            O painel já carrega o conteúdo atual do site. Clique em Editar apenas no bloco que quiser ajustar. Alterações ficam visíveis em até 1 minuto após salvar.
           </p>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <p className="text-xs text-blue-700">
-              💡 <strong>Hero</strong> = a primeira seção grande que o visitante vê ao abrir o site, com título, subtítulo e barra de busca de imóveis.
-            </p>
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-slate-700" htmlFor="texto_hero_titulo">
-              Titulo do hero (pagina inicial)
-            </label>
-            <input
-              id="texto_hero_titulo"
-              type="text"
+          <ConteudoCard
+            titulo="Hero"
+            descricao="Primeira seção da home, com título e subtítulo principais."
+            valor={`${cfg.texto_hero_titulo ?? ""}\n\n${cfg.texto_hero_subtitulo ?? ""}`}
+            editing={Boolean(conteudoEditando.hero)}
+            onToggle={() => toggleConteudoCard("hero")}
+          >
+            <Field
+              label="Título do hero"
+              name="texto_hero_titulo"
               value={cfg.texto_hero_titulo ?? ""}
-              onChange={(e) => set("texto_hero_titulo", e.target.value)}
-              placeholder="Encontre o imovel certo em Sorocaba e regiao"
-              className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              onChange={(v) => set("texto_hero_titulo", v)}
+              placeholder="Encontre o imóvel certo em Sorocaba e região"
             />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-slate-700" htmlFor="texto_hero_subtitulo">
-              Subtitulo / descricao do hero
-            </label>
-            <textarea
-              id="texto_hero_subtitulo"
-              value={cfg.texto_hero_subtitulo ?? ""}
-              onChange={(e) => set("texto_hero_subtitulo", e.target.value)}
-              rows={3}
-              placeholder="Compra, venda e locacao com atendimento consultivo..."
-              className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 resize-none"
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-slate-700" htmlFor="texto_sobre_titulo">
-              Titulo da secao Sobre
-            </label>
-            <input
-              id="texto_sobre_titulo"
-              type="text"
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-slate-700" htmlFor="texto_hero_subtitulo">
+                Subtítulo do hero
+              </label>
+              <textarea
+                id="texto_hero_subtitulo"
+                value={cfg.texto_hero_subtitulo ?? ""}
+                onChange={(e) => set("texto_hero_subtitulo", e.target.value)}
+                rows={3}
+                className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 resize-none"
+              />
+            </div>
+          </ConteudoCard>
+
+          <ConteudoCard
+            titulo="Sobre a Jéssica"
+            descricao="Bloco institucional da home com posicionamento e apresentação da corretora."
+            valor={`${cfg.texto_sobre_titulo ?? ""}\n\n${cfg.texto_sobre_corpo ?? ""}`}
+            editing={Boolean(conteudoEditando.sobre)}
+            onToggle={() => toggleConteudoCard("sobre")}
+          >
+            <Field
+              label="Título da seção Sobre"
+              name="texto_sobre_titulo"
               value={cfg.texto_sobre_titulo ?? ""}
-              onChange={(e) => set("texto_sobre_titulo", e.target.value)}
-              placeholder="Atendimento consultivo para decisoes imobiliarias"
-              className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              onChange={(v) => set("texto_sobre_titulo", v)}
+              placeholder="Atendimento consultivo para decisões imobiliárias"
             />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-slate-700" htmlFor="texto_sobre_corpo">
-              Texto principal da secao Sobre
-            </label>
-            <textarea
-              id="texto_sobre_corpo"
-              value={cfg.texto_sobre_corpo ?? ""}
-              onChange={(e) => set("texto_sobre_corpo", e.target.value)}
-              rows={5}
-              placeholder="Especialista em imoveis residenciais e comerciais em Sorocaba..."
-              className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 resize-none"
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-slate-700" htmlFor="texto_sobre_corpo">
+                Texto principal da seção Sobre
+              </label>
+              <textarea
+                id="texto_sobre_corpo"
+                value={cfg.texto_sobre_corpo ?? ""}
+                onChange={(e) => set("texto_sobre_corpo", e.target.value)}
+                rows={5}
+                className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 resize-none"
+              />
+            </div>
+          </ConteudoCard>
+
+          <ConteudoCard
+            titulo="OG Image"
+            descricao="Imagem de compartilhamento social. Agora pode ser enviada por upload ou informada por URL manual."
+            valor={cfg.og_image_url ?? ""}
+            editing={Boolean(conteudoEditando.og)}
+            onToggle={() => toggleConteudoCard("og")}
+          >
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs text-blue-700">
+              <strong>OG Image</strong> é a imagem exibida quando o link é compartilhado no WhatsApp, Instagram, LinkedIn etc. Recomendado 1200×630px.
+            </div>
+            <ImageUploadField
+              label="Imagem de compartilhamento"
+              currentUrl={cfg.og_image_url ?? ""}
+              tipo="og_image"
+              onUpload={uploadImagem}
+              uploadMsg={uploadMsg?.tipo === "og_image" ? uploadMsg : null}
             />
-          </div>
-          <hr className="border-slate-200" />
-
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <p className="text-xs text-blue-700">🖼️ <strong>OG Image</strong> = imagem exibida quando o link é compartilhado no WhatsApp, Instagram, LinkedIn etc. Recomendado 1200×630px.</p>
-          </div>
-          <Field
-            label="URL da OG Image (compartilhamento social)"
-            name="og_image_url"
-            value={cfg.og_image_url ?? ""}
-            onChange={(v) => set("og_image_url", v)}
-            placeholder="https://exemplo.com/og-image.jpg"
-          />
-
-          <hr className="border-slate-200" />
-
-          <p className="text-sm font-semibold text-slate-700">Radar JCNI</p>
-          <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-            <p className="text-xs text-slate-600">A seção Radar aparece na página inicial e convida o visitante a deixar o perfil para receber indicações automaticamente.</p>
-          </div>
-          <Field
-            label="Título do Radar (h2)"
-            name="radar_titulo"
-            value={cfg.radar_titulo ?? ""}
-            onChange={(v) => set("radar_titulo", v)}
-            placeholder="Receba indicações quando surgir um imóvel compatível com seu perfil"
-          />
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-slate-700" htmlFor="radar_card_descricao">Descrição do card Radar</label>
-            <textarea
-              id="radar_card_descricao"
-              value={cfg.radar_card_descricao ?? ""}
-              onChange={(e) => set("radar_card_descricao", e.target.value)}
-              rows={3}
-              placeholder="Score de compatibilidade, motivos de match e contato direto via WhatsApp..."
-              className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 resize-none"
+            <Field
+              label="URL manual da OG Image"
+              name="og_image_url"
+              value={cfg.og_image_url ?? ""}
+              onChange={(v) => set("og_image_url", v)}
+              placeholder="https://exemplo.com/og-image.jpg"
             />
-          </div>
+          </ConteudoCard>
+
+          <ConteudoCard
+            titulo="Radar JCNI"
+            descricao="Faixa escura da home que explica o matching automático entre imóveis e clientes."
+            valor={`${cfg.radar_titulo ?? ""}\n\n${cfg.radar_card_descricao ?? ""}`}
+            editing={Boolean(conteudoEditando.radar)}
+            onToggle={() => toggleConteudoCard("radar")}
+          >
+            <Field
+              label="Título do Radar"
+              name="radar_titulo"
+              value={cfg.radar_titulo ?? ""}
+              onChange={(v) => set("radar_titulo", v)}
+              placeholder="Receba indicações quando surgir um imóvel compatível com seu perfil"
+            />
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-slate-700" htmlFor="radar_card_descricao">
+                Descrição do card Radar
+              </label>
+              <textarea
+                id="radar_card_descricao"
+                value={cfg.radar_card_descricao ?? ""}
+                onChange={(e) => set("radar_card_descricao", e.target.value)}
+                rows={3}
+                className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 resize-none"
+              />
+            </div>
+          </ConteudoCard>
 
           <SaveBar saving={saving} onSave={salvar} />
         </div>

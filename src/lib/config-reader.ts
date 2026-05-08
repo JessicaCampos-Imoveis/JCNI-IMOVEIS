@@ -8,6 +8,7 @@ import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { BRAND_SETTINGS, SITE_IMAGES } from "@/lib/site-settings";
 import { THEME_PRESETS, type ThemePreset } from "@/lib/theme-presets";
+import { SITE_CONFIG } from "@/lib/site-config";
 
 export type PublicConfig = {
   logoUrl: string;
@@ -44,6 +45,12 @@ export type PublicConfig = {
   chatIaNome: string;
   // WhatsApp (numero para links dinamicos)
   whatsappNumero: string;
+  contatoEmail: string;
+  instagramUrl: string;
+  socialWhatsappUrl: string;
+  facebookUrl: string;
+  linkedinUrl: string;
+  tiktokUrl: string;
   // OG Image para compartilhamento social
   ogImageUrl: string;
   // Radar JCNI
@@ -56,10 +63,10 @@ const DEFAULT: PublicConfig = {
   logoAlt: BRAND_SETTINGS.logo.alt,
   jessicaFotoUrl: SITE_IMAGES.jessicaPortrait.url,
   jessicaFotoHeroUrl: SITE_IMAGES.jessicaPortrait.url,
-  heroTitulo: "",
-  heroSubtitulo: "",
-  sobreTitulo: "",
-  sobreCorpo: "",
+  heroTitulo: "Encontre o imóvel certo em Sorocaba e região",
+  heroSubtitulo: "Compra, venda e locação com atendimento consultivo, anúncios de alto padrão e dados tratados com responsabilidade.",
+  sobreTitulo: "Atendimento consultivo para decisões imobiliárias",
+  sobreCorpo: "Especialista em imóveis residenciais e comerciais em Sorocaba, a Jéssica acompanha cada cliente com atenção direta — da busca ao fechamento. Aqui você encontra imóveis bem descritos, fotos tratadas e contato sem intermediários.",
   exibirIptu: true,
   exibirComodos: true,
   ordenacaoMaisVisitados: false,
@@ -83,6 +90,12 @@ const DEFAULT: PublicConfig = {
   chatIaNome: "Assistente JCNI",
   // WhatsApp
   whatsappNumero: "",
+  contatoEmail: SITE_CONFIG.email,
+  instagramUrl: SITE_CONFIG.instagramUrl,
+  socialWhatsappUrl: "",
+  facebookUrl: "",
+  linkedinUrl: "",
+  tiktokUrl: "",
   // OG Image
   ogImageUrl: "",
   // Radar JCNI
@@ -146,6 +159,12 @@ async function fetchConfig(): Promise<PublicConfig> {
       chatIaNome: m["chat_nome"] ?? DEFAULT.chatIaNome,
       // WhatsApp
       whatsappNumero: m["whatsapp_numero"] ?? "",
+      contatoEmail: m["empresa_email"] ?? DEFAULT.contatoEmail,
+      instagramUrl: m["social_instagram_url"] ?? DEFAULT.instagramUrl,
+      socialWhatsappUrl: m["social_whatsapp_url"] ?? DEFAULT.socialWhatsappUrl,
+      facebookUrl: m["social_facebook_url"] ?? DEFAULT.facebookUrl,
+      linkedinUrl: m["social_linkedin_url"] ?? DEFAULT.linkedinUrl,
+      tiktokUrl: m["social_tiktok_url"] ?? DEFAULT.tiktokUrl,
       // OG Image
       ogImageUrl: m["og_image_url"] ?? "",
       // Radar JCNI
