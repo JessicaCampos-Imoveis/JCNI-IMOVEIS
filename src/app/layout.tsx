@@ -15,26 +15,30 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_CONFIG.siteUrl),
-  title: {
-    default: "JCNI – Jéssica Campos Negócios Imobiliários",
-    template: "%s | JCNI",
-  },
-  description: SITE_CONFIG.shortDescription,
-  openGraph: {
-    title: "JCNI – Jéssica Campos Negócios Imobiliários",
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getPublicConfig();
+  return {
+    metadataBase: new URL(SITE_CONFIG.siteUrl),
+    title: {
+      default: "JCNI – Jéssica Campos Negócios Imobiliários",
+      template: "%s | JCNI",
+    },
     description: SITE_CONFIG.shortDescription,
-    url: SITE_CONFIG.siteUrl,
-    siteName: "JCNI – Jéssica Campos Negócios Imobiliários",
-    locale: "pt_BR",
-    type: "website",
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-};
+    openGraph: {
+      title: "JCNI – Jéssica Campos Negócios Imobiliários",
+      description: SITE_CONFIG.shortDescription,
+      url: SITE_CONFIG.siteUrl,
+      siteName: "JCNI – Jéssica Campos Negócios Imobiliários",
+      locale: "pt_BR",
+      type: "website",
+      ...(config.ogImageUrl ? { images: [{ url: config.ogImageUrl, width: 1200, height: 630 }] } : {}),
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+  };
+}
 
 export default async function RootLayout({
   children,

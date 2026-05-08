@@ -323,16 +323,14 @@ export default async function Home({
           <div>
             <p className="eyebrow contrast">Radar JCNI</p>
             <h2 id="radar">
-              Receba indicações quando surgir um imóvel compatível com seu
-              perfil
+              {siteConfig.radarTitulo}
             </h2>
           </div>
           <div className="radar-card">
             <span>Ao publicar um imóvel</span>
             <strong>o sistema cruza com clientes compatíveis</strong>
             <p>
-              Score de compatibilidade, motivos de match e contato direto via
-              WhatsApp — tudo pelo painel da Jéssica.
+              {siteConfig.radarCardDescricao}
             </p>
           </div>
         </div>
@@ -348,7 +346,7 @@ export default async function Home({
         />
       )}
       <FooterLinksband />
-      <SiteFooter />
+      <SiteFooter logoUrl={siteConfig.logoUrl} logoAlt={siteConfig.logoAlt} />
     </main>
   );
 }
@@ -530,14 +528,21 @@ function PropertyGrid({ cards }: { cards: HomeCard[] }) {
   );
 }
 
-function SiteFooter() {
+function SiteFooter({ logoUrl, logoAlt }: { logoUrl: string; logoAlt: string }) {
   return (
     <footer className="site-footer">
       <div>
-        <Link className="brand contrast" href="/">
-          <span className="brand-mark">{BRAND_SETTINGS.initials}</span>
-          <span>{BRAND_SETTINGS.displayName}</span>
-        </Link>
+        {logoUrl ? (
+          <Link className="brand contrast" href="/" aria-label="Página inicial — JCNI">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={logoUrl} alt={logoAlt || BRAND_SETTINGS.displayName} height={40} style={{ maxHeight: 40, objectFit: "contain" }} />
+          </Link>
+        ) : (
+          <Link className="brand contrast" href="/">
+            <span className="brand-mark">{BRAND_SETTINGS.initials}</span>
+            <span>{BRAND_SETTINGS.displayName}</span>
+          </Link>
+        )}
         <p>{SITE_CONFIG.shortDescription}</p>
       </div>
       <nav aria-label="Links do rodapé">

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SITE_CONFIG } from "@/lib/site-config";
+import { SiteHeader } from "@/app/_components/SiteHeader";
 
 export const metadata: Metadata = {
   title: "Contato | JCNI",
@@ -15,6 +16,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ContatoLayout({ children }: { children: React.ReactNode }) {
-  return children;
+export default async function ContatoLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      <SiteHeader />
+      {children}
+    </>
+  );
 }

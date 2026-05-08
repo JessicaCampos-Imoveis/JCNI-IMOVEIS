@@ -21,13 +21,91 @@ type TabId = (typeof TABS)[number]["id"];
 
 const TAB_DESCRIPTIONS: Record<TabId, string> = {
   geral: "Dados básicos do negócio: nome, contato, CRECI, logo e fotos da corretora — aparecem em todo o site.",
-  conteudo: "Personalize os textos principais: título e subtítulo do hero, e a seção 'Sobre' com sua história.",
+  conteudo: "Personalize os textos principais: título e subtítulo do hero, seção Sobre, Radar e OG image para compartilhamento.",
   exibicao: "Controle o que é exibido nos anúncios: IPTU, cômodos e link de simulação de financiamento.",
   whatsapp: "Número e mensagem padrão para o botão de contato via WhatsApp que aparece em cada imóvel.",
   notificacoes: "Receba um e-mail a cada novo lead e configure confirmação automática para o interessado.",
   integracoes: "Analytics (GA4, Meta Pixel, GTM), chat ao vivo (Tawk, JivoChat, Crisp), CRM e scripts personalizados.",
   tema: "Escolha a identidade visual do site: paleta de cores, estilo geral e aparência dos botões.",
   webhooks: "Dispare chamadas HTTP automáticas para outros sistemas quando leads chegam ou mudam de status.",
+};
+
+const TAB_GUIDES: Record<TabId, { titulo: string; items: string[] }> = {
+  geral: {
+    titulo: "Como usar a aba Geral",
+    items: [
+      "Nome da empresa, telefone, e-mail, endereço e CRECI aparecem no rodapé do site e em e-mails de contato.",
+      "Logo: PNG com fundo transparente funciona melhor. Recomendado: 240x60px. Aparece no cabeçalho e no rodapé.",
+      "Foto Corretor(a): foto quadrada 400×400px, usada na seção Sobre da página inicial.",
+      "Foto Banner: foto vertical/de corpo inteiro 1400×800px, exibida no topo da home como destaque.",
+      "Todas as imagens são otimizadas automaticamente para WebP pelo servidor.",
+    ],
+  },
+  conteudo: {
+    titulo: "Como usar a aba Conteúdo",
+    items: [
+      "Hero = a primeira seção que o visitante vê ao abrir o site. Título curto e chamativo converte melhor.",
+      "Seção Sobre: conte a história da Jessica em 2-4 frases, destacando experiência e region.",
+      "Radar JCNI: texto que aparece na faixa escura \"Receba indicações…\". Pode personalizar título e descrição do card.",
+      "OG Image: imagem exibida quando o link do site é compartilhado no WhatsApp, Instagram e redes sociais. Recomendado 1200×630px.",
+      "Deixe em branco para usar os valores padrão do sistema. Alterações ficam visíveis em até 1 minuto.",
+    ],
+  },
+  exibicao: {
+    titulo: "Como usar a aba Exibição",
+    items: [
+      "IPTU: se desativado, o valor do IPTU não aparece nas páginas de imóvel, útil quando não se tem a informação.",
+      "Cômodos: oculta quartos/banheiros/vagas nos cards de listagem se desativado.",
+      "Link de financiamento: ativa um botão \"Simular financiamento\" em cada imóvel, apontando para a URL configurada.",
+      "Imóveis mais visitados: reordena a listagem para mostrar os mais acessados primeiro.",
+    ],
+  },
+  whatsapp: {
+    titulo: "Como usar a aba WhatsApp",
+    items: [
+      "Número no formato internacional sem '+': ex. 5515999999999.",
+      "A mensagem padrão é pré-preenchida quando o visitante clica no botão de WhatsApp. Use variáveis como {imovel} se o template suportar.",
+      "O botão flutuante aparece em todas as páginas públicas do site.",
+    ],
+  },
+  notificacoes: {
+    titulo: "Como usar a aba Notificações",
+    items: [
+      "E-mail de chegada de lead: você recebe um e-mail quando alguém preenche um formulário no site.",
+      "Confirmação automática: o interessado recebe um e-mail confirmando que a mensagem foi recebida.",
+      "Os e-mails são enviados via Resend com template HTML responsivo.",
+      "Se o e-mail de destino não for preenchido aqui, usa o e-mail geral da aba Geral.",
+    ],
+  },
+  integracoes: {
+    titulo: "Como usar a aba Integrações",
+    items: [
+      "Analytics: cole apenas o ID do serviço (não o script inteiro). Deixe em branco para desativar.",
+      "GA4: Measurement ID começa com G- (ex: G-XXXXXXXXXX).",
+      "Meta Pixel: só o número do Pixel ID (15 dígitos).",
+      "Chat ao vivo: apenas um provedor ativo por vez. Selecione o card e preencha o ID.",
+      "CRM: quando ativo, leads capturados são enviados automaticamente. O token é secreto; mantenha em sigilo.",
+      "Scripts: cole scripts de terceiros confiáveis. Scripts maliciosos comprometem o site e os visitantes.",
+    ],
+  },
+  tema: {
+    titulo: "Como usar a aba Tema",
+    items: [
+      "Escolha entre os presets disponíveis: cada um define paleta de cores e tipografia do site inteiro.",
+      "A mudança é imediata após salvar, sem necessidade de redesploy.",
+      "Os presets são testados para contraste e acessibilidade (WCAG AA).",
+    ],
+  },
+  webhooks: {
+    titulo: "Como usar a aba Webhooks",
+    items: [
+      "Webhook = uma chamada HTTP automática para outro sistema quando um evento ocorre.",
+      "Eventos disponíveis: lead.criado (novo lead), lead.status (lead mudou de etapa).",
+      "A URL deve aceitar POST com JSON. O payload inclui os dados do lead.",
+      "Use para integrar com n8n, Zapier, Make, ou qualquer sistema que aceite HTTP.",
+      "Se a requisição falhar, o sistema registra o erro mas não tenta novamente automaticamente.",
+    ],
+  },
 };
 
 type Webhook = {
@@ -157,6 +235,7 @@ function SaveBar({ saving, onSave }: { saving: boolean; onSave: () => void }) {
 
 export default function ConfiguracoesPage() {
   const [tab, setTab] = useState<TabId>("geral");
+  const [ajudaAberta, setAjudaAberta] = useState(false);
   const [cfg, setCfg] = useState<ConfigMap>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -292,13 +371,36 @@ export default function ConfiguracoesPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-slate-800 mb-6">Configuracoes</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-slate-800">Configuracoes</h1>
+        <button
+          type="button"
+          onClick={() => setAjudaAberta((v) => !v)}
+          title="Guia desta aba"
+          className={`w-8 h-8 rounded-full border-2 font-bold text-sm flex items-center justify-center transition-colors ${
+            ajudaAberta ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-500 border-slate-300 hover:border-slate-400"
+          }`}
+        >
+          ?
+        </button>
+      </div>
+
+      {ajudaAberta && (
+        <div className="mb-5 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+          <p className="text-xs font-bold text-blue-700 mb-2">{TAB_GUIDES[tab].titulo}</p>
+          <ul className="text-xs text-blue-700 space-y-1.5 pl-4 list-disc leading-relaxed">
+            {TAB_GUIDES[tab].items.map((item, i) => (
+              <li key={i}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="flex flex-wrap gap-2 border-b border-slate-200 mb-6">
         {TABS.map((t) => (
           <button
             key={t.id}
-            onClick={() => setTab(t.id)}
+            onClick={() => { setTab(t.id); setAjudaAberta(false); }}
             title={TAB_DESCRIPTIONS[t.id]}
             className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
               tab === t.id
@@ -311,8 +413,8 @@ export default function ConfiguracoesPage() {
         ))}
       </div>
 
-      <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-        <p className="text-xs text-blue-700 font-medium">{TAB_DESCRIPTIONS[tab]}</p>
+      <div className="mb-4 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between gap-2">
+        <p className="text-xs text-slate-500">{TAB_DESCRIPTIONS[tab]}</p>
       </div>
 
       {msg && (
@@ -451,6 +553,44 @@ export default function ConfiguracoesPage() {
               className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 resize-none"
             />
           </div>
+          <hr className="border-slate-200" />
+
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p className="text-xs text-blue-700">🖼️ <strong>OG Image</strong> = imagem exibida quando o link é compartilhado no WhatsApp, Instagram, LinkedIn etc. Recomendado 1200×630px.</p>
+          </div>
+          <Field
+            label="URL da OG Image (compartilhamento social)"
+            name="og_image_url"
+            value={cfg.og_image_url ?? ""}
+            onChange={(v) => set("og_image_url", v)}
+            placeholder="https://exemplo.com/og-image.jpg"
+          />
+
+          <hr className="border-slate-200" />
+
+          <p className="text-sm font-semibold text-slate-700">Radar JCNI</p>
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+            <p className="text-xs text-slate-600">A seção Radar aparece na página inicial e convida o visitante a deixar o perfil para receber indicações automaticamente.</p>
+          </div>
+          <Field
+            label="Título do Radar (h2)"
+            name="radar_titulo"
+            value={cfg.radar_titulo ?? ""}
+            onChange={(v) => set("radar_titulo", v)}
+            placeholder="Receba indicações quando surgir um imóvel compatível com seu perfil"
+          />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-slate-700" htmlFor="radar_card_descricao">Descrição do card Radar</label>
+            <textarea
+              id="radar_card_descricao"
+              value={cfg.radar_card_descricao ?? ""}
+              onChange={(e) => set("radar_card_descricao", e.target.value)}
+              rows={3}
+              placeholder="Score de compatibilidade, motivos de match e contato direto via WhatsApp..."
+              className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 resize-none"
+            />
+          </div>
+
           <SaveBar saving={saving} onSave={salvar} />
         </div>
       )}

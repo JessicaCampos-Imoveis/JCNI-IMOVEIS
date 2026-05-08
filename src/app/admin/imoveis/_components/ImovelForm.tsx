@@ -150,6 +150,124 @@ function CampoTexto({
   );
 }
 
+// ─── Campo Bairro com autocomplete via IBGE ──────────────────────────────────
+// Busca subdistritos (bairros) do municipio pelo codigo IBGE (padrao: Sorocaba).
+// O usuario pode aceitar uma sugestao ou digitar livremente.
+const IBGE_MUNICIPIO_ID = 3552205; // Sorocaba-SP
+
+function CampoBairroIBGE({
+  value,
+  onChange,
+  required,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  required?: boolean;
+}) {
+  const [bairros, setBairros] = useState<string[]>([]);
+  const [sugestoes, setSugestoes] = useState<string[]>([]);
+  const [aberto, setAberto] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  // Carrega bairros do IBGE na primeira renderizacao
+  useEffect(() => {
+    fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/municipios/${IBGE_MUNICIPIO_ID}/subdistritos`)
+      .then((r) => r.json())
+      .then((data: { nome: string }[]) => {
+        if (Array.isArray(data)) {
+          setBairros(data.map((d) => d.nome).sort((a, b) => a.localeCompare(b, "pt-BR")));
+        }
+      })
+      .catch(() => {/* silencioso — o usuario pode digitar livremente */});
+  }, []);
+
+  // Fecha dropdown ao clicar fora
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setAberto(false);
+      }
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  function handleInput(v: string) {
+    onChange(v);
+    if (v.length >= 2 && bairros.length > 0) {
+      const q = v.toLowerCase();
+      setSugestoes(bairros.filter((b) => b.toLowerCase().includes(q)).slice(0, 8));
+      setAberto(true);
+    } else {
+      setSugestoes([]);
+      setAberto(false);
+    }
+  }
+
+  function selecionar(bairro: string) {
+    onChange(bairro);
+    setSugestoes([]);
+    setAberto(false);
+  }
+
+  return (
+    <div className="campo" ref={wrapRef} style={{ position: "relative" }}>
+      <label className="campo-label">
+        Bairro{required && <span className="campo-req">*</span>}
+        <span className="campo-hint" style={{ marginLeft: 6 }}>Sorocaba — IBGE</span>
+      </label>
+      <input
+        type="text"
+        name="bairro"
+        value={value}
+        onChange={(e) => handleInput(e.target.value)}
+        onFocus={() => {
+          if (value.length >= 2 && sugestoes.length > 0) setAberto(true);
+        }}
+        required={required}
+        placeholder="Digite ou selecione o bairro"
+        className="campo-input"
+        autoComplete="off"
+      />
+      {aberto && sugestoes.length > 0 && (
+        <ul style={{
+          position: "absolute",
+          zIndex: 50,
+          top: "100%",
+          left: 0,
+          right: 0,
+          background: "#fff",
+          border: "1px solid #e2e8f0",
+          borderRadius: 8,
+          boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
+          listStyle: "none",
+          margin: "2px 0 0",
+          padding: "4px 0",
+          maxHeight: 220,
+          overflowY: "auto",
+        }}>
+          {sugestoes.map((b) => (
+            <li
+              key={b}
+              onMouseDown={(e) => { e.preventDefault(); selecionar(b); }}
+              style={{
+                padding: "8px 14px",
+                fontSize: "0.85rem",
+                cursor: "pointer",
+                color: "#1e293b",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#f1f5f9")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "")}
+            >
+              {b}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 function CampoSelect({
   label,
   name,
@@ -474,7 +592,7 @@ export function ImovelForm({ values, imovelId, onChange }: Props) {
           </div>
 
           <div className="grid-2">
-            <CampoTexto label="Bairro" name="bairro" value={values.bairro} onChange={f("bairro")} required />
+            <CampoBairroIBGE value={values.bairro} onChange={f("bairro")} required />
             <CampoTexto label="Cidade" name="cidade" value={values.cidade} onChange={f("cidade")} required />
           </div>
 

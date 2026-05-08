@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { SiteHeader } from "@/app/_components/SiteHeader";
 
 type StatusImovel = "DISPONIVEL" | "RESERVADO" | "VENDIDO" | "LOCADO" | "INATIVO";
 
@@ -145,8 +144,6 @@ function PropertiesPageContent() {
 
   return (
     <main className="imoveis-page">
-      <SiteHeader />
-
       <section className="imoveis-shell">
         <div className="imoveis-heading">
           <p className="eyebrow">Imóveis</p>

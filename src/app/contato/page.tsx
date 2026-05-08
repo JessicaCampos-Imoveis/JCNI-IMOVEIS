@@ -2,7 +2,6 @@
 
 import { FormEvent, useState } from "react";
 import { SITE_CONFIG } from "@/lib/site-config";
-import { SiteHeader } from "@/app/_components/SiteHeader";
 
 export default function ContactPage() {
   const [nome, setNome] = useState("");
@@ -58,7 +57,6 @@ export default function ContactPage() {
 
   return (
     <main className="simple-page">
-      <SiteHeader />
       <section className="simple-shell contact-layout">
         <div>
           <p className="eyebrow">Contato</p>

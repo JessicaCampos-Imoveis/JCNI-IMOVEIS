@@ -44,6 +44,11 @@ export type PublicConfig = {
   chatIaNome: string;
   // WhatsApp (numero para links dinamicos)
   whatsappNumero: string;
+  // OG Image para compartilhamento social
+  ogImageUrl: string;
+  // Radar JCNI
+  radarTitulo: string;
+  radarCardDescricao: string;
 };
 
 const DEFAULT: PublicConfig = {
@@ -78,6 +83,11 @@ const DEFAULT: PublicConfig = {
   chatIaNome: "Assistente JCNI",
   // WhatsApp
   whatsappNumero: "",
+  // OG Image
+  ogImageUrl: "",
+  // Radar JCNI
+  radarTitulo: "Receba indicações quando surgir um imóvel compatível com seu perfil",
+  radarCardDescricao: "Score de compatibilidade, motivos de match e contato direto via WhatsApp — tudo pelo painel da Jéssica.",
 };
 
 /** Remove caracteres nao seguros para interpolacao em atributos e scripts. */
@@ -136,6 +146,11 @@ async function fetchConfig(): Promise<PublicConfig> {
       chatIaNome: m["chat_nome"] ?? DEFAULT.chatIaNome,
       // WhatsApp
       whatsappNumero: m["whatsapp_numero"] ?? "",
+      // OG Image
+      ogImageUrl: m["og_image_url"] ?? "",
+      // Radar JCNI
+      radarTitulo: m["radar_titulo"] ?? DEFAULT.radarTitulo,
+      radarCardDescricao: m["radar_card_descricao"] ?? DEFAULT.radarCardDescricao,
     };
   } catch {
     return DEFAULT;
