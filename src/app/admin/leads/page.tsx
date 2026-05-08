@@ -52,6 +52,7 @@ export default function AdminLeadsPage() {
   const [salvandoLeadId, setSalvandoLeadId] = useState<string | null>(null);
   const [expandido, setExpandido] = useState<string | null>(null);
   const [overCol, setOverCol] = useState<LeadStatus | null>(null);
+  const [ajudaAberta, setAjudaAberta] = useState(false);
   const draggingId = useRef<string | null>(null);
 
   const carregarLeads = useCallback(async () => {
@@ -149,6 +150,14 @@ export default function AdminLeadsPage() {
           <p style={{ margin: "0.2rem 0 0", color: "#6b7280", fontSize: "0.88rem" }}>{total} lead{total !== 1 ? "s" : ""} no total</p>
         </div>
         <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+          <button
+            type="button"
+            onClick={() => setAjudaAberta((v) => !v)}
+            title="Como funciona este painel"
+            style={{ height: 28, width: 28, borderRadius: "50%", border: "1.5px solid #9ca3af", background: ajudaAberta ? "#1d4ed8" : "#fff", color: ajudaAberta ? "#fff" : "#6b7280", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+          >
+            ?
+          </button>
           <input
             type="search"
             value={busca}
@@ -166,17 +175,19 @@ export default function AdminLeadsPage() {
         </div>
       </div>
 
-      {/* Painel explicativo */}
-      <div style={{ marginBottom: "1.25rem", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 10, padding: "0.85rem 1rem" }}>
-        <p style={{ margin: 0, fontWeight: 700, fontSize: "0.82rem", color: "#1d4ed8", marginBottom: "0.35rem" }}>Como funciona o CRM de leads</p>
-        <ul style={{ margin: 0, padding: "0 0 0 1.1rem", fontSize: "0.8rem", color: "#1e40af", lineHeight: 1.65 }}>
-          <li><strong>Cada coluna</strong> representa uma etapa do atendimento: Novo → Em contato → Visitou → Proposta → Fechado / Perdido.</li>
-          <li><strong>Arrastar o card</strong> entre colunas atualiza o status do lead automaticamente em tempo real.</li>
-          <li><strong>Clique no card</strong> para expandir e ver mensagem, imóvel de interesse, UTMs de origem e alterar o status pelo seletor (ideal no celular).</li>
-          <li><strong>Busca:</strong> filtre por nome, telefone, e-mail ou palavra-chave da mensagem em tempo real.</li>
-          <li>Leads marcados como <strong>Fechado</strong> = negociação concluída com sucesso. <strong>Perdido</strong> = lead descartado.</li>
-        </ul>
-      </div>
+      {/* Painel de ajuda — visível só após clicar (?) */}
+      {ajudaAberta && (
+        <div style={{ marginBottom: "1.25rem", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 10, padding: "0.85rem 1rem" }}>
+          <p style={{ margin: 0, fontWeight: 700, fontSize: "0.82rem", color: "#1d4ed8", marginBottom: "0.35rem" }}>Como funciona o CRM de leads</p>
+          <ul style={{ margin: 0, padding: "0 0 0 1.1rem", fontSize: "0.8rem", color: "#1e40af", lineHeight: 1.65 }}>
+            <li><strong>Cada coluna</strong> representa uma etapa do atendimento: Novo → Em contato → Visitou → Proposta → Fechado / Perdido.</li>
+            <li><strong>Arrastar o card</strong> entre colunas atualiza o status do lead automaticamente em tempo real.</li>
+            <li><strong>Clique no card</strong> para expandir e ver mensagem, imóvel de interesse, UTMs de origem e alterar o status pelo seletor (ideal no celular).</li>
+            <li><strong>Busca:</strong> filtre por nome, telefone, e-mail ou palavra-chave da mensagem em tempo real.</li>
+            <li>Leads marcados como <strong>Fechado</strong> = negociação concluída com sucesso. <strong>Perdido</strong> = lead descartado.</li>
+          </ul>
+        </div>
+      )}
 
       {carregando && <p style={{ color: "#6b7280" }}>Carregando leads...</p>}
       {erro && <p style={{ color: "#b91c1c", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, padding: "0.6rem 0.75rem" }}>{erro}</p>}

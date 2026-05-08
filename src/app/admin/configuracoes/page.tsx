@@ -604,104 +604,135 @@ export default function ConfiguracoesPage() {
         <div className="flex flex-col gap-8">
 
           {/* Analytics */}
-          <section className="flex flex-col gap-4">
-            <div>
+          <section>
+            <div className="mb-3">
               <p className="text-sm font-semibold text-slate-800">Analytics e rastreamento</p>
-              <p className="text-xs text-slate-400 mt-0.5">Deixe em branco para desativar. Os scripts sao injetados automaticamente em todas as paginas.</p>
+              <p className="text-xs text-slate-400 mt-0.5">Os scripts sao injetados automaticamente em todas as paginas. Deixe em branco para desativar o servico.</p>
             </div>
-            <Field label="Google Analytics 4 — Measurement ID" name="ga_measurement_id" value={cfg.ga_measurement_id ?? ""} onChange={(v) => set("ga_measurement_id", v)} placeholder="G-XXXXXXXXXX" />
-            <Field label="Meta Pixel (Facebook/Instagram) — Pixel ID" name="meta_pixel_id" value={cfg.meta_pixel_id ?? ""} onChange={(v) => set("meta_pixel_id", v)} placeholder="123456789012345" />
-            <Field label="TikTok Pixel — Pixel ID" name="tiktok_pixel_id" value={cfg.tiktok_pixel_id ?? ""} onChange={(v) => set("tiktok_pixel_id", v)} placeholder="CXXXXXXXXXXXXXXXX" />
-            <Field label="Google Tag Manager — Container ID" name="gtm_container_id" value={cfg.gtm_container_id ?? ""} onChange={(v) => set("gtm_container_id", v)} placeholder="GTM-XXXXXXX" />
-            <Field label="LinkedIn Insight Tag — Partner ID" name="linkedin_insight_tag" value={cfg.linkedin_insight_tag ?? ""} onChange={(v) => set("linkedin_insight_tag", v)} placeholder="1234567" />
-            <Field label="reCAPTCHA v3 — Site Key (publica)" name="recaptcha_site_key" value={cfg.recaptcha_site_key ?? ""} onChange={(v) => set("recaptcha_site_key", v)} placeholder="6Le..." />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                { key: "ga_measurement_id", nome: "Google Analytics 4", sigla: "GA4", placeholder: "G-XXXXXXXXXX", dica: "Measurement ID" },
+                { key: "meta_pixel_id", nome: "Meta Pixel", sigla: "Meta", placeholder: "123456789012345", dica: "Facebook / Instagram — Pixel ID" },
+                { key: "tiktok_pixel_id", nome: "TikTok Pixel", sigla: "TikTok", placeholder: "CXXXXXXXXXXXXXXXX", dica: "Pixel ID" },
+                { key: "gtm_container_id", nome: "Google Tag Manager", sigla: "GTM", placeholder: "GTM-XXXXXXX", dica: "Container ID" },
+                { key: "linkedin_insight_tag", nome: "LinkedIn Insight Tag", sigla: "LinkedIn", placeholder: "1234567", dica: "Partner ID" },
+                { key: "recaptcha_site_key", nome: "reCAPTCHA v3", sigla: "reCAPTCHA", placeholder: "6Le...", dica: "Site Key publica" },
+              ].map(({ key, nome, sigla, placeholder, dica }) => {
+                const val = (cfg as Record<string, string | null | undefined>)[key] ?? "";
+                const ativo = val.trim().length > 0;
+                return (
+                  <div key={key} className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold flex-shrink-0">{sigla.slice(0, 2)}</span>
+                        <span className="text-sm font-semibold text-slate-800">{nome}</span>
+                      </div>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border flex-shrink-0 ${ativo ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-400 border-slate-200"}`}>
+                        {ativo ? "Configurado" : "Inativo"}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400">{dica}</p>
+                    <input
+                      type="text"
+                      value={val}
+                      onChange={(e) => set(key as keyof typeof cfg, e.target.value)}
+                      placeholder={placeholder}
+                      className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-slate-50"
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </section>
 
           <hr className="border-slate-200" />
 
           {/* Chat ao vivo */}
-          <section className="flex flex-col gap-4">
-            <div>
+          <section>
+            <div className="mb-3">
               <p className="text-sm font-semibold text-slate-800">Chat ao vivo</p>
               <p className="text-xs text-slate-400 mt-0.5">Apenas um provedor pode estar ativo por vez. O widget aparece em todas as paginas publicas.</p>
             </div>
-            <div className="flex flex-wrap gap-4">
-              {(["none", "tawk", "jivo", "crisp"] as const).map((p) => (
-                <label key={p} className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="chat_ao_vivo_provider"
-                    value={p}
-                    checked={(cfg.chat_ao_vivo_provider ?? "none") === p}
-                    onChange={() => set("chat_ao_vivo_provider", p)}
-                    className="accent-amber-500"
-                  />
-                  <span className="text-sm text-slate-700">
-                    {p === "none" ? "Desativado" : p === "tawk" ? "Tawk.to" : p === "jivo" ? "JivoChat" : "Crisp"}
-                  </span>
-                </label>
-              ))}
+            <div className="flex flex-wrap gap-3 mb-4">
+              {(["none", "tawk", "jivo", "crisp"] as const).map((p) => {
+                const ativo = (cfg.chat_ao_vivo_provider ?? "none") === p;
+                const label = p === "none" ? "Desativado" : p === "tawk" ? "Tawk.to" : p === "jivo" ? "JivoChat" : "Crisp";
+                const desc = p === "none" ? "Sem widget de chat" : p === "tawk" ? "Gratuito e popular" : p === "jivo" ? "Multi-canal" : "Chat moderno";
+                return (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => set("chat_ao_vivo_provider", p)}
+                    className={`flex flex-col items-start gap-0.5 rounded-xl border px-4 py-3 text-left transition-all cursor-pointer w-36 focus:outline-none ${ativo ? "border-amber-400 bg-amber-50 shadow-sm" : "border-slate-200 bg-white hover:border-slate-300"}`}
+                  >
+                    <span className={`text-sm font-semibold ${ativo ? "text-amber-700" : "text-slate-700"}`}>{label}</span>
+                    <span className="text-[11px] text-slate-400">{desc}</span>
+                    {ativo && <span className="mt-1 text-[10px] font-bold text-amber-600 uppercase tracking-wide">Ativo</span>}
+                  </button>
+                );
+              })}
             </div>
             {cfg.chat_ao_vivo_provider && cfg.chat_ao_vivo_provider !== "none" && (
-              <Field
-                label={`ID${cfg.chat_ao_vivo_provider === "tawk" ? " / URL embed do Tawk.to" : cfg.chat_ao_vivo_provider === "jivo" ? " do JivoChat" : " do Crisp (Website ID)"}`}
-                name="chat_ao_vivo_id"
-                value={cfg.chat_ao_vivo_id ?? ""}
-                onChange={(v) => set("chat_ao_vivo_id", v)}
-                placeholder={
-                  cfg.chat_ao_vivo_provider === "tawk"
-                    ? "https://embed.tawk.to/xxx/yyy"
-                    : cfg.chat_ao_vivo_provider === "jivo"
-                    ? "xxxxxxxx"
-                    : "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                }
-              />
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                <Field
+                  label={`ID de configuracao do ${cfg.chat_ao_vivo_provider === "tawk" ? "Tawk.to" : cfg.chat_ao_vivo_provider === "jivo" ? "JivoChat" : "Crisp"}`}
+                  name="chat_ao_vivo_id"
+                  value={cfg.chat_ao_vivo_id ?? ""}
+                  onChange={(v) => set("chat_ao_vivo_id", v)}
+                  placeholder={
+                    cfg.chat_ao_vivo_provider === "tawk"
+                      ? "https://embed.tawk.to/xxx/yyy"
+                      : cfg.chat_ao_vivo_provider === "jivo"
+                      ? "xxxxxxxx"
+                      : "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                  }
+                />
+              </div>
             )}
           </section>
 
           <hr className="border-slate-200" />
 
           {/* CRM */}
-          <section className="flex flex-col gap-4">
-            <div>
+          <section>
+            <div className="mb-3">
               <p className="text-sm font-semibold text-slate-800">CRM externo</p>
-              <p className="text-xs text-slate-400 mt-0.5">Quando ativo, leads criados no site sao enviados automaticamente para o CRM.</p>
+              <p className="text-xs text-slate-400 mt-0.5">Quando ativo, leads capturados no site sao enviados automaticamente para o CRM escolhido.</p>
             </div>
-
-            <div className="flex flex-col gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50">
-              <Toggle
-                id="crm_rdstation_ativo"
-                label="RD Station Marketing — sincronizar leads"
-                checked={cfg.crm_rdstation_ativo === "true"}
-                onChange={(v) => set("crm_rdstation_ativo", v ? "true" : "false")}
-              />
-              {cfg.crm_rdstation_ativo === "true" && (
-                <Field
-                  label="Token publico do RD Station"
-                  name="crm_rdstation_token"
-                  value={cfg.crm_rdstation_token ?? ""}
-                  onChange={(v) => set("crm_rdstation_token", v)}
-                  placeholder="seu-token-publico-rd"
-                />
-              )}
-            </div>
-
-            <div className="flex flex-col gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50">
-              <Toggle
-                id="crm_hubspot_ativo"
-                label="HubSpot — sincronizar leads"
-                checked={cfg.crm_hubspot_ativo === "true"}
-                onChange={(v) => set("crm_hubspot_ativo", v ? "true" : "false")}
-              />
-              {cfg.crm_hubspot_ativo === "true" && (
-                <Field
-                  label="Access Token do HubSpot (Private App)"
-                  name="crm_hubspot_token"
-                  value={cfg.crm_hubspot_token ?? ""}
-                  onChange={(v) => set("crm_hubspot_token", v)}
-                  placeholder="pat-eu1-..."
-                />
-              )}
+            <div className="flex flex-col gap-3">
+              {[
+                { toggleKey: "crm_rdstation_ativo", tokenKey: "crm_rdstation_token", nome: "RD Station Marketing", placeholder: "seu-token-publico-rd", labelToken: "Token publico do RD Station" },
+                { toggleKey: "crm_hubspot_ativo", tokenKey: "crm_hubspot_token", nome: "HubSpot", placeholder: "pat-eu1-...", labelToken: "Access Token (Private App)" },
+              ].map(({ toggleKey, tokenKey, nome, placeholder, labelToken }) => {
+                const ativo = (cfg as Record<string, string | null | undefined>)[toggleKey] === "true";
+                return (
+                  <div key={toggleKey} className={`rounded-xl border p-4 transition-all ${ativo ? "border-emerald-200 bg-emerald-50" : "border-slate-200 bg-white"}`}>
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="text-sm font-semibold text-slate-800">{nome}</span>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${ativo ? "bg-emerald-100 text-emerald-700 border-emerald-300" : "bg-slate-100 text-slate-400 border-slate-200"}`}>
+                        {ativo ? "Ativo" : "Inativo"}
+                      </span>
+                    </div>
+                    <Toggle
+                      id={toggleKey}
+                      label={`Sincronizar leads com ${nome}`}
+                      checked={ativo}
+                      onChange={(v) => set(toggleKey as keyof typeof cfg, v ? "true" : "false")}
+                    />
+                    {ativo && (
+                      <div className="mt-3">
+                        <Field
+                          label={labelToken}
+                          name={tokenKey}
+                          value={(cfg as Record<string, string | null | undefined>)[tokenKey] ?? ""}
+                          onChange={(v) => set(tokenKey as keyof typeof cfg, v)}
+                          placeholder={placeholder}
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </section>
 
@@ -711,36 +742,37 @@ export default function ConfiguracoesPage() {
           <section className="flex flex-col gap-4">
             <div>
               <p className="text-sm font-semibold text-slate-800">Scripts customizados</p>
-              <div className="mt-1 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
-                <p className="text-xs text-amber-700">
-                  ⚠️ Cole apenas scripts de fontes confiaveis. Aceita snippet completo com tags &lt;script&gt;...&lt;/script&gt; ou apenas o JS. Scripts maliciosos comprometem o site e os visitantes.
+              <div className="mt-1.5 px-3 py-2.5 bg-amber-50 border border-amber-200 rounded-xl flex gap-2">
+                <span className="text-amber-500 text-xs mt-0.5 flex-shrink-0">⚠</span>
+                <p className="text-xs text-amber-700 leading-relaxed">
+                  Cole apenas scripts de fontes confiaveis. Aceita snippet completo com <code className="bg-amber-100 px-1 rounded">&lt;script&gt;</code> ou apenas JS puro. Scripts maliciosos comprometem o site e os visitantes.
                 </p>
               </div>
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-sm font-medium text-slate-700" htmlFor="script_head">
-                Script no &lt;head&gt; (todas as paginas)
+                Antes de <code className="bg-slate-100 px-1 rounded text-xs">&lt;/head&gt;</code> — em todas as paginas
               </label>
               <textarea
                 id="script_head"
                 value={cfg.script_head ?? ""}
                 onChange={(e) => set("script_head", e.target.value)}
-                rows={5}
-                placeholder="<script>\n  // seu codigo aqui\n</script>"
-                className="border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-amber-500 resize-y"
+                rows={4}
+                placeholder={"<script>\n  // seu codigo aqui\n</script>"}
+                className="border border-slate-200 rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-amber-500 resize-y bg-slate-50"
               />
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-sm font-medium text-slate-700" htmlFor="script_body">
-                Script antes de &lt;/body&gt; (todas as paginas)
+                Antes de <code className="bg-slate-100 px-1 rounded text-xs">&lt;/body&gt;</code> — em todas as paginas
               </label>
               <textarea
                 id="script_body"
                 value={cfg.script_body ?? ""}
                 onChange={(e) => set("script_body", e.target.value)}
-                rows={5}
-                placeholder="<script>\n  // seu codigo aqui\n</script>"
-                className="border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-amber-500 resize-y"
+                rows={4}
+                placeholder={"<script>\n  // seu codigo aqui\n</script>"}
+                className="border border-slate-200 rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-amber-500 resize-y bg-slate-50"
               />
             </div>
           </section>

@@ -77,6 +77,7 @@ export default function AdminImoveisPage() {
   const [excluindo, setExcluindo] = useState<string | null>(null);
   const [purgando, setPurgando] = useState<string | null>(null);
   const [modalPurge, setModalPurge] = useState<{ id: string; titulo: string; codigo: string } | null>(null);
+  const [ajudaAberta, setAjudaAberta] = useState(false);
 
   const buscarImoveis = useCallback(async () => {
     setCarregando(true);
@@ -143,22 +144,34 @@ export default function AdminImoveisPage() {
             <p className="page-subtitle">{paginacao.total} imóvel{paginacao.total !== 1 ? "is" : ""} cadastrado{paginacao.total !== 1 ? "s" : ""}</p>
           )}
         </div>
-        <Link href="/admin/imoveis/novo" className="btn-primary">
-          + Novo Imóvel
-        </Link>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <button
+            type="button"
+            onClick={() => setAjudaAberta((v) => !v)}
+            title="Como usar este painel"
+            className={ajudaAberta ? "btn-ajuda btn-ajuda--ativo" : "btn-ajuda"}
+          >
+            ?
+          </button>
+          <Link href="/admin/imoveis/novo" className="btn-primary">
+            + Novo Imóvel
+          </Link>
+        </div>
       </div>
 
-      {/* Painel explicativo */}
-      <div className="info-banner">
-        <p className="info-banner-titulo">Como gerenciar seus imóveis</p>
-        <ul className="info-banner-lista">
-          <li><strong>✏️ Editar</strong> — abre o formulário completo do imóvel para alterar dados, fotos, comodidades e status.</li>
-          <li><strong>👁 Ver no site</strong> — abre a landing page pública do imóvel em nova aba.</li>
-          <li><strong>🗑 Desativar</strong> — marca o imóvel como <em>Inativo</em> e o remove do site público. Os dados são mantidos e pode ser reativado.</li>
-          <li><strong>☠ Excluir permanentemente</strong> — remove o imóvel e todas as fotos do sistema. <em>Essa ação não pode ser desfeita.</em></li>
-        </ul>
-        <p className="info-banner-dica">💡 Use os filtros de status e tipo para localizar rapidamente um imóvel no acervo.</p>
-      </div>
+      {/* Painel de ajuda — visível só após clicar (?) */}
+      {ajudaAberta && (
+        <div className="info-banner">
+          <p className="info-banner-titulo">Como gerenciar seus imóveis</p>
+          <ul className="info-banner-lista">
+            <li><strong>✏️ Editar</strong> — abre o formulário completo do imóvel para alterar dados, fotos, comodidades e status.</li>
+            <li><strong>👁 Ver no site</strong> — abre a landing page pública do imóvel em nova aba.</li>
+            <li><strong>🗑 Desativar</strong> — marca o imóvel como <em>Inativo</em> e o remove do site público. Os dados são mantidos e pode ser reativado.</li>
+            <li><strong>☠ Excluir permanentemente</strong> — remove o imóvel e todas as fotos do sistema. <em>Essa ação não pode ser desfeita.</em></li>
+          </ul>
+          <p className="info-banner-dica">💡 Use os filtros de status e tipo para localizar rapidamente um imóvel no acervo.</p>
+        </div>
+      )}
 
       {/* Filtros */}
       <div className="filtros-bar">
@@ -386,6 +399,9 @@ export default function AdminImoveisPage() {
         .info-banner-titulo { font-weight: 700; font-size: 0.82rem; color: #1d4ed8; margin: 0 0 0.35rem; }
         .info-banner-lista { margin: 0; padding: 0 0 0 1.1rem; font-size: 0.8rem; color: #1e40af; line-height: 1.7; }
         .info-banner-dica { font-size: 0.78rem; color: #1e40af; margin: 0.45rem 0 0; }
+
+        .btn-ajuda { height: 28px; width: 28px; border-radius: 50%; border: 1.5px solid #9ca3af; background: #fff; color: #6b7280; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.15s, color 0.15s; }
+        .btn-ajuda--ativo { background: #1d4ed8; color: #fff; border-color: #1d4ed8; }
 
         .page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
         .page-title { font-size: 1.5rem; font-weight: 700; margin: 0; }

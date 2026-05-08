@@ -23,6 +23,7 @@ export default function AdminComodidadesPage() {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const [busca, setBusca] = useState("");
+  const [ajudaAberta, setAjudaAberta] = useState(false);
 
   const [novaCategoria, setNovaCategoria] = useState("");
   const [novoItemNome, setNovoItemNome] = useState("");
@@ -188,24 +189,32 @@ export default function AdminComodidadesPage() {
 
   return (
     <div className="admin-comodidades-page">
-      <div className="header-shell">
+      <div className="header-shell" style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "0.75rem" }}>
         <div>
           <Link href="/admin" className="breadcrumb">← Dashboard</Link>
           <h1>Comodidades</h1>
           <p>Gerencie as categorias e itens de comodidade que podem ser vinculados a cada imóvel no cadastro.</p>
         </div>
+        <button
+          type="button"
+          onClick={() => setAjudaAberta((v) => !v)}
+          title="Como usar este painel"
+          style={{ marginTop: "0.25rem", height: 28, width: 28, borderRadius: "50%", border: `1.5px solid ${ajudaAberta ? "#1d4ed8" : "#9ca3af"}`, background: ajudaAberta ? "#1d4ed8" : "#fff", color: ajudaAberta ? "#fff" : "#6b7280", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+        >?</button>
       </div>
 
-      {/* Painel explicativo */}
-      <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 10, padding: "0.85rem 1rem", marginBottom: "1.25rem" }}>
-        <p style={{ fontWeight: 700, fontSize: "0.82rem", color: "#1d4ed8", margin: "0 0 0.35rem" }}>Como funciona</p>
-        <ul style={{ margin: 0, padding: "0 0 0 1.1rem", fontSize: "0.8rem", color: "#1e40af", lineHeight: 1.7 }}>
-          <li><strong>Categorias</strong> agrupam comodidades relacionadas (ex: &ldquo;Lazer&rdquo;, &ldquo;Segurança&rdquo;, &ldquo;Infraestrutura&rdquo;).</li>
-          <li><strong>Itens</strong> são as comodidades individuais (ex: &ldquo;Piscina&rdquo;, &ldquo;Academia&rdquo;, &ldquo;Portaria 24h&rdquo;).</li>
-          <li>Na edição de um imóvel, você poderá marcar quais dessas comodidades ele possui — elas aparecem na página pública do imóvel.</li>
-          <li>Para excluir uma categoria, remova primeiro todos os itens vinculados a ela.</li>
-        </ul>
-      </div>
+      {/* Painel de ajuda — visível so apos clicar (?) */}
+      {ajudaAberta && (
+        <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 10, padding: "0.85rem 1rem", marginBottom: "1.25rem" }}>
+          <p style={{ fontWeight: 700, fontSize: "0.82rem", color: "#1d4ed8", margin: "0 0 0.35rem" }}>Como funciona</p>
+          <ul style={{ margin: 0, padding: "0 0 0 1.1rem", fontSize: "0.8rem", color: "#1e40af", lineHeight: 1.7 }}>
+            <li><strong>Categorias</strong> agrupam comodidades relacionadas (ex: &ldquo;Lazer&rdquo;, &ldquo;Segurança&rdquo;, &ldquo;Infraestrutura&rdquo;).</li>
+            <li><strong>Itens</strong> são as comodidades individuais (ex: &ldquo;Piscina&rdquo;, &ldquo;Academia&rdquo;, &ldquo;Portaria 24h&rdquo;).</li>
+            <li>Na edição de um imóvel, você poderá marcar quais dessas comodidades ele possui — elas aparecem na página pública do imóvel.</li>
+            <li>Para excluir uma categoria, remova primeiro todos os itens vinculados a ela.</li>
+          </ul>
+        </div>
+      )}
 
       <section className="top-controls" aria-label="Busca e cadastro rápido">
         <div className="busca-wrap">
