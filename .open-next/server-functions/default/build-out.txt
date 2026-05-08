@@ -1,0 +1,77 @@
+   ▲ Next.js 15.5.15 (Turbopack)
+   - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Finished writing to disk in 125ms
+ ✓ Compiled successfully in 8.5s
+   Linting and checking validity of types ...
+
+./src/app/admin/imoveis/page.tsx
+206:25  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+262:19  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+   Collecting page data ...
+[Error [PageNotFoundError]: Cannot find module for page: /api/admin/imoveis/[id]/fotos/[fotoId]] {
+  code: 'ENOENT'
+}
+[Error [PageNotFoundError]: Cannot find module for page: /api/admin/imoveis/[id]/fotos/reorder] {
+  code: 'ENOENT'
+}
+[Error [PageNotFoundError]: Cannot find module for page: /api/admin/imoveis/[id]/fotos] {
+  code: 'ENOENT'
+}
+[Error [PageNotFoundError]: Cannot find module for page: /api/admin/imoveis/[id]/comodos/[comodoId]] {
+  code: 'ENOENT'
+}
+[Error [PageNotFoundError]: Cannot find module for page: /api/auth/logout] {
+  code: 'ENOENT'
+}
+[Error [PageNotFoundError]: Cannot find module for page: /alugar] {
+  code: 'ENOENT'
+}
+[Error [PageNotFoundError]: Cannot find module for page: /api/imoveis/[slug]] {
+  code: 'ENOENT'
+}
+[Error [PageNotFoundError]: Cannot find module for page: /contato] {
+  code: 'ENOENT'
+}
+[Error [PageNotFoundError]: Cannot find module for page: /api/imoveis] {
+  code: 'ENOENT'
+}
+[Error [PageNotFoundError]: Cannot find module for page: /] {
+  code: 'ENOENT'
+}
+[Error [PageNotFoundError]: Cannot find module for page: /imoveis] {
+  code: 'ENOENT'
+}
+[Error [PageNotFoundError]: Cannot find module for page: /admin/login] {
+  code: 'ENOENT'
+}
+[Error [PageNotFoundError]: Cannot find module for page: /api/admin/comodidades/categorias] {
+  code: 'ENOENT'
+}
+[Error [PageNotFoundError]: Cannot find module for page: /politica-de-privacidade] {
+  code: 'ENOENT'
+}
+[Error [PageNotFoundError]: Cannot find module for page: /api/admin/imoveis/[id]] {
+  code: 'ENOENT'
+}
+[Error [PageNotFoundError]: Cannot find module for page: /api/admin/imoveis] {
+  code: 'ENOENT'
+}
+[Error [PageNotFoundError]: Cannot find module for page: /comprar] {
+  code: 'ENOENT'
+}
+[Error [PageNotFoundError]: Cannot find module for page: /api/auth/login] {
+  code: 'ENOENT'
+}
+[Error [PageNotFoundError]: Cannot find module for page: /favicon.ico] {
+  code: 'ENOENT'
+}
+uncaughtException [Error: EPERM: operation not permitted, open 'g:\Desenvolvimento Clientes\Jessica-Campos-Negocios-Imobiliarios\jessica-campos-imoveis\.next\trace'] {
+  errno: -4048,
+  code: 'EPERM',
+  syscall: 'open',
+  path: 'g:\\Desenvolvimento Clientes\\Jessica-Campos-Negocios-Imobiliarios\\jessica-campos-imoveis\\.next\\trace'
+}

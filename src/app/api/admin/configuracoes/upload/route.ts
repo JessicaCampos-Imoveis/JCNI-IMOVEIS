@@ -9,15 +9,31 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
 import sharp from "sharp";
 import { prisma } from "@/lib/prisma";
-import { uploadFoto } from "@/lib/storage";
+import { deletarFoto, uploadFoto } from "@/lib/storage";
 
 const TIPOS_PERMITIDOS: Record<string, { chave: string; maxDim: number }> = {
   logo: { chave: "marca_logo_url", maxDim: 400 },
   foto_jessica: { chave: "marca_foto_jessica_url", maxDim: 1200 },
+  foto_jessica_hero: { chave: "marca_foto_jessica_hero_url", maxDim: 1400 },
 };
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_MIME = ["image/jpeg", "image/png", "image/webp"];
+
+function extrairNomeArquivoStorage(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    const marker = "/storage/v1/object/public/imoveis-fotos/";
+    const idx = parsed.pathname.indexOf(marker);
+    if (idx === -1) return null;
+
+    const nomeArquivo = decodeURIComponent(parsed.pathname.slice(idx + marker.length));
+    if (!nomeArquivo) return null;
+    return nomeArquivo;
+  } catch {
+    return null;
+  }
+}
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
@@ -30,8 +46,16 @@ export async function POST(req: NextRequest) {
 
   const tipoConfig = TIPOS_PERMITIDOS[tipo];
   if (!tipoConfig) {
-    return NextResponse.json({ error: "Tipo invalido. Use: logo, foto_jessica" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Tipo invalido. Use: logo, foto_jessica, foto_jessica_hero" },
+      { status: 400 },
+    );
   }
+
+  const configAnterior = await prisma.configuracao.findUnique({
+    where: { chave: tipoConfig.chave },
+    select: { valor: true },
+  });
 
   if (!ALLOWED_MIME.includes(file.type)) {
     return NextResponse.json(
@@ -70,8 +94,17 @@ export async function POST(req: NextRequest) {
   try {
     const result = await uploadFoto({ buffer: processed, nomeArquivo });
     url = result.url;
-  } catch {
-    return NextResponse.json({ error: "Falha ao salvar imagem no storage." }, { status: 502 });
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : "erro desconhecido";
+    console.error("[configuracoes/upload] Falha no storage:", detail);
+
+    return NextResponse.json(
+      {
+        error: "Falha ao salvar imagem no storage.",
+        ...(process.env.NODE_ENV !== "production" ? { detail } : {}),
+      },
+      { status: 502 },
+    );
   }
 
   // Salvar URL na configuracao
@@ -80,6 +113,20 @@ export async function POST(req: NextRequest) {
     update: { valor: url },
     create: { chave: tipoConfig.chave, valor: url },
   });
+
+  const nomeArquivoAnterior = configAnterior?.valor
+    ? extrairNomeArquivoStorage(configAnterior.valor)
+    : null;
+
+  // Limpeza best-effort: remove arquivo antigo apos persistir nova URL.
+  if (nomeArquivoAnterior && nomeArquivoAnterior !== nomeArquivo) {
+    try {
+      await deletarFoto(nomeArquivoAnterior);
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : "erro desconhecido";
+      console.warn("[configuracoes/upload] Nao foi possivel remover imagem antiga:", detail);
+    }
+  }
 
   // Invalida cache do site imediatamente
   revalidateTag("site-config");

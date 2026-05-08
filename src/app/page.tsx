@@ -127,65 +127,60 @@ function obterTipoAtivo(valor?: string): HomeTipoFiltro {
 }
 
 async function carregarCardsHome(tipoAtivo: HomeTipoFiltro): Promise<HomeCard[]> {
-  try {
-    const where = {
-      deletadoEm: null,
-      status: { in: ["DISPONIVEL", "RESERVADO", "VENDIDO", "LOCADO"] as StatusImovel[] },
-      ...(tipoAtivo !== "TODOS" ? { tipo: tipoAtivo } : {}),
-    };
+  const where = {
+    deletadoEm: null,
+    status: { in: ["DISPONIVEL", "RESERVADO", "VENDIDO", "LOCADO"] as StatusImovel[] },
+    ...(tipoAtivo !== "TODOS" ? { tipo: tipoAtivo } : {}),
+  };
 
-    const imoveis = await prisma.imovel.findMany({
-      where,
-      orderBy: { criadoEm: "desc" },
-      take: 8,
-      select: {
-        id: true,
-        slugUrl: true,
-        titulo: true,
-        tipo: true,
-        finalidade: true,
-        status: true,
-        preco: true,
-        bairro: true,
-        area: true,
-        quartos: true,
-        banheiros: true,
-        vagas: true,
-        altTexto: true,
-        fotos: {
-          select: { url: true },
-          orderBy: [{ destaque: "desc" }, { ordem: "asc" }],
-          take: 1,
-        },
+  const imoveis = await prisma.imovel.findMany({
+    where,
+    orderBy: { criadoEm: "desc" },
+    take: 8,
+    select: {
+      id: true,
+      slugUrl: true,
+      titulo: true,
+      tipo: true,
+      finalidade: true,
+      status: true,
+      preco: true,
+      bairro: true,
+      area: true,
+      quartos: true,
+      banheiros: true,
+      vagas: true,
+      altTexto: true,
+      fotos: {
+        select: { url: true },
+        orderBy: [{ destaque: "desc" }, { ordem: "asc" }],
+        take: 1,
       },
-    });
+    },
+  });
 
-    return imoveis.map((imovel) => {
-      const fallback = imagemFallbackPorTipo(imovel.tipo);
-      const fotoPrincipal = imovel.fotos[0]?.url;
+  return imoveis.map((imovel) => {
+    const fallback = imagemFallbackPorTipo(imovel.tipo);
+    const fotoPrincipal = imovel.fotos[0]?.url;
 
-      return {
-        id: imovel.id,
-        href: `/imoveis/${imovel.slugUrl}`,
-        tipoLabel: TIPO_LABEL[imovel.tipo],
-        finalidadeLabel: FINALIDADE_LABEL[imovel.finalidade],
-        statusLabel: imovel.status === "DISPONIVEL" ? null : STATUS_LABEL[imovel.status],
-        preco: formatarPreco(Number(imovel.preco)),
-        bairro: imovel.bairro,
-        imageUrl: fotoPrincipal ?? fallback.url,
-        imageAlt: imovel.altTexto ?? imovel.titulo,
-        features: [
-          imovel.area ? `${imovel.area} m²` : "- m²",
-          imovel.quartos != null ? `${imovel.quartos} quartos` : "- quartos",
-          imovel.banheiros != null ? `${imovel.banheiros} banheiros` : "- banheiros",
-          imovel.vagas != null ? `${imovel.vagas} vagas` : "- vagas",
-        ],
-      };
-    });
-  } catch (error) {
-    console.warn("home: fallback sem cards por indisponibilidade do banco.", error);
-    return [];
-  }
+    return {
+      id: imovel.id,
+      href: `/imoveis/${imovel.slugUrl}`,
+      tipoLabel: TIPO_LABEL[imovel.tipo],
+      finalidadeLabel: FINALIDADE_LABEL[imovel.finalidade],
+      statusLabel: imovel.status === "DISPONIVEL" ? null : STATUS_LABEL[imovel.status],
+      preco: formatarPreco(Number(imovel.preco)),
+      bairro: imovel.bairro,
+      imageUrl: fotoPrincipal ?? fallback.url,
+      imageAlt: imovel.altTexto ?? imovel.titulo,
+      features: [
+        imovel.area ? `${imovel.area} m²` : "- m²",
+        imovel.quartos != null ? `${imovel.quartos} quartos` : "- quartos",
+        imovel.banheiros != null ? `${imovel.banheiros} banheiros` : "- banheiros",
+        imovel.vagas != null ? `${imovel.vagas} vagas` : "- vagas",
+      ],
+    };
+  });
 }
 
 export default async function Home({
@@ -203,16 +198,17 @@ export default async function Home({
   const cards = await carregarCardsHome(tipoAtivo);
   const finalidadeInicial = params.finalidade === "ALUGUEL" ? "ALUGUEL" : "VENDA";
 
-  const heroStyle = {
-    "--portrait-image": `url("${SITE_IMAGES.jessicaPortrait.url}")`,
-  } as CSSProperties;
-
-  // Foto da Jessica: usa URL do banco se disponivel, senão fallback ao arquivo estatico
+  // Foto da Jessica: permite imagem dedicada no hero e fallback para a foto padrao
   const jessicaFotoUrl = siteConfig.jessicaFotoUrl;
+  const jessicaFotoHeroUrl = siteConfig.jessicaFotoHeroUrl;
   const jessicaPortrait: ManagedSiteImage = {
     ...SITE_IMAGES.jessicaPortrait,
     url: jessicaFotoUrl,
   };
+
+  const heroStyle = {
+    "--portrait-image": `url("${jessicaFotoHeroUrl}")`,
+  } as CSSProperties;
 
   const jsonLd = {
     "@context": "https://schema.org",

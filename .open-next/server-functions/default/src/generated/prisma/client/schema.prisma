@@ -1,0 +1,204 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma/client"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── AUTH ────────────────────────────────────────────────────────────────────
+model Usuario {
+  id       String   @id @default(cuid())
+  email    String   @unique
+  senha    String // bcrypt hash, salt >= 12
+  nome     String   @default("")
+  criadoEm DateTime @default(now())
+}
+
+// ─── IMÓVEIS ─────────────────────────────────────────────────────────────────
+model Imovel {
+  id     String @id @default(cuid())
+  codigo String @unique // IMV-0001
+
+  // DADOS PÚBLICOS
+  titulo          String
+  descricao       String?
+  tipo            TipoImovel
+  finalidade      Finalidade
+  status          StatusImovel @default(DISPONIVEL)
+  preco           Decimal
+  precoCondominio Decimal?
+  iptu            Decimal?
+  bairro          String
+  cidade          String       @default("Sorocaba")
+  estado          String       @default("SP")
+  nomeCondominio  String?
+  area            Float?
+  areaUtil        Float?
+  quartos         Int?
+  suites          Int?
+  banheiros       Int?
+  vagas           Int?
+  videoYoutube    String?
+  visualizacoes   Int          @default(0)
+
+  // SEO
+  slugUrl       String  @unique
+  altTexto      String?
+  metaTitulo    String?
+  metaDescricao String?
+
+  // DADOS PRIVADOS (RN01 — jamais em endpoints públicos)
+  nomeProprietario     String?
+  telefoneProprietario String?
+  emailProprietario    String?
+  cep                  String?
+  rua                  String?
+  numero               String?
+  complemento          String?
+  andar                String?
+  observacoesInternas  String?
+
+  // RELAÇÕES
+  fotos       Foto[]
+  comodos     Comodo[]
+  comodidades ImovelComodidade[]
+  leads       Lead[]
+
+  // META
+  criadoEm     DateTime  @default(now())
+  atualizadoEm DateTime  @updatedAt
+  deletadoEm   DateTime? // null = ativo; preenchido = soft deleted
+}
+
+model Foto {
+  id          String   @id @default(cuid())
+  imovelId    String
+  imovel      Imovel   @relation(fields: [imovelId], references: [id], onDelete: Cascade)
+  url         String
+  nomeArquivo String
+  ordem       Int      @default(0)
+  destaque    Boolean  @default(false)
+  watermark   Boolean  @default(true)
+  criadaEm    DateTime @default(now())
+}
+
+// ─── CÔMODOS ─────────────────────────────────────────────────────────────────
+model Comodo {
+  id       String @id @default(cuid())
+  imovelId String
+  imovel   Imovel @relation(fields: [imovelId], references: [id], onDelete: Cascade)
+  nome     String
+  areaM2   Float?
+  ordem    Int    @default(0)
+}
+
+// ─── COMODIDADES ─────────────────────────────────────────────────────────────
+model CategoriaComodidade {
+  id    String       @id @default(cuid())
+  nome  String
+  icone String?
+  ordem Int          @default(0)
+  itens Comodidade[]
+}
+
+model Comodidade {
+  id          String              @id @default(cuid())
+  nome        String
+  icone       String?
+  categoriaId String
+  categoria   CategoriaComodidade @relation(fields: [categoriaId], references: [id])
+  imoveis     ImovelComodidade[]
+}
+
+model ImovelComodidade {
+  imovelId     String
+  comodidadeId String
+  imovel       Imovel     @relation(fields: [imovelId], references: [id], onDelete: Cascade)
+  comodidade   Comodidade @relation(fields: [comodidadeId], references: [id], onDelete: Cascade)
+
+  @@id([imovelId, comodidadeId])
+}
+
+// ─── LEADS ───────────────────────────────────────────────────────────────────
+model Lead {
+  id          String     @id @default(cuid())
+  nome        String
+  email       String?
+  telefone    String
+  mensagem    String?
+  imovelId    String?
+  imovel      Imovel?    @relation(fields: [imovelId], references: [id], onDelete: SetNull)
+  status      LeadStatus @default(NOVO)
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  origem      String? // "contato" | "chat_ia" | "visita" | "radar"
+  criadoEm    DateTime   @default(now())
+}
+
+// ─── CONFIGURAÇÕES ───────────────────────────────────────────────────────────
+model Configuracao {
+  id    String @id @default(cuid())
+  chave String @unique
+  valor String
+
+  @@index([chave])
+}
+
+// ─── WEBHOOKS ────────────────────────────────────────────────────────────────
+model Webhook {
+  id       String       @id @default(cuid())
+  nome     String
+  url      String
+  evento   String // lead.criado | lead.status_alterado
+  ativo    Boolean      @default(true)
+  logs     WebhookLog[]
+  criadoEm DateTime     @default(now())
+}
+
+model WebhookLog {
+  id         String   @id @default(cuid())
+  webhookId  String
+  webhook    Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+  statusHttp Int
+  resposta   String?
+  criadoEm   DateTime @default(now())
+}
+
+// ─── ENUMS ───────────────────────────────────────────────────────────────────
+enum TipoImovel {
+  APARTAMENTO
+  CASA
+  TERRENO
+  COMERCIAL
+  COBERTURA
+  KITNET
+  RURAL
+}
+
+enum Finalidade {
+  VENDA
+  ALUGUEL
+  AMBOS
+}
+
+enum StatusImovel {
+  DISPONIVEL
+  RESERVADO
+  VENDIDO
+  LOCADO
+  INATIVO
+}
+
+enum LeadStatus {
+  NOVO
+  EM_CONTATO
+  VISITOU
+  PROPOSTA
+  FECHADO
+  PERDIDO
+}

@@ -1,0 +1,185 @@
+
+ ⛅️ wrangler 4.86.0 (update available 4.88.0)
+─────────────────────────────────────────────
+OpenNext project detected, calling `opennextjs-cloudflare deploy`
+
+┌──────────────────────────────┐
+│ OpenNext — Cloudflare deploy │
+└──────────────────────────────┘
+
+WARN OpenNext is not fully compatible with Windows.
+WARN For optimal performance, it is recommended to use Windows Subsystem for Linux (WSL).
+WARN While OpenNext may function on Windows, it could encounter unpredictable failures during runtime.
+Incremental cache does not need populating
+Tag cache does not need populating
+
+ ⛅️ wrangler 4.86.0 (update available 4.88.0)
+─────────────────────────────────────────────
+? Would you like to continue?
+🤖 Using fallback value in non-interactive context: yes
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mThe local configuration being used (generated from your local configuration file) differs from the remote configuration of your Worker set via the Cloudflare Dashboard:[0m
+
+   {
+  [32m+  assets: {[39m
+  [32m+    binding: "ASSETS"[39m
+  [32m+  }[39m
+  [31m-  compatibility_date: "2026-04-30"[39m
+  [32m+  compatibility_date: "2025-04-01"[39m
+     vars: {
+  [31m-    ADMIN2_EMAIL: "jessicacnegociosimobiliarios@gmail.com"[39m
+  [31m-    ADMIN2_SENHA: "camiseta13@"[39m
+  [31m-    ADMIN_EMAIL: "jrcm2210@gmail.com"[39m
+  [31m-    ADMIN_SENHA: "camiseta13@"[39m
+  [31m-    JWT_SECRET: "d8f71e1728757752a05f3c8f9dcb5a45c4c0635ee8ee2a8ac478a7a985c032f6b27b25efd117dcba38ea4633611d7d2f"[39m
+  [31m-    NEXT_PUBLIC_APP_URL: "[4mhttps://jcni.jessicacnegociosimobiliarios.workers.dev"[39m[0m
+  [31m-    NEXT_PUBLIC_SITE_URL: "[4mhttps://jcni.jessicacnegociosimobiliarios.workers.dev"[39m[0m
+  [31m-    NEXT_PUBLIC_SUPABASE_ANON_KEY: "sb_publishable_X9tNPAtx-J76ia2JNYBEFw_-x9aCPDY"[39m
+  [31m-    NEXT_PUBLIC_SUPABASE_URL: "[4mhttps://yekqwhujqopegxuizlcq.supabase.co"[39m[0m
+  [31m-    NODE_ENV: "production"[39m
+  [31m-    NOTIFY_EMAIL: "jessicacnegociosimobiliarios@gmail.com"[39m
+  [31m-    RESEND_API_KEY: "re_LmKirLZJ_HiwWqfFQWRWe6zEB3foZkVWV"[39m
+  [31m-    RESEND_FROM: "JessicaCampos<onboarding@resend.dev>"[39m
+  [31m-    SUPABASE_SERVICE_ROLE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlla3F3aHVqcW9wZWd4dWl6bGNxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NzUwNDA1MiwiZXhwIjoyMDkzMDgwMDUyfQ.XoNsRdiKLw1rBO8uozWUkMyFIHehjpoy5fOUczofMwA"[39m
+     }
+   }
+  
+  
+  Deploying the Worker will override the remote configuration with your local one.
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mBuild failed with 6 errors:[0m
+
+  [31mX [41;31m[[41;97mERROR[41;31m][0m [1mENOENT: no such file or directory, open 'g:\Desenvolvimento Clientes\Jessica-Campos-Negocios-Imobiliarios\jessica-campos-imoveis\.open-next\server-functions\default\g:\Desenvolvimento Clientes\Jessica-Campos-Negocios-Imobiliarios\jessica-campos-imoveis\.open-next\server-functions\default\.next\server\chunks\Desenvolvimento ClientesJessica-Campos-Negocios-Imobiliariosjessica-campos-imoveis.open-nextserver-functionsdefaultsrcgeneratedprismaclientquery_engine_bg.wasm'[0m [1m[35m[plugin wrangler-module-collector][0m
+  
+      .open-next/server-functions/default/handler.mjs:90:47938:
+  [37m      90 │ ...it import([32m"g:/Desenvolvimento Clientes/Jessica-Campos-Negocios-[37m...
+           ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+  
+  
+  [31mX [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "g:/Desenvolvimento Clientes/Jessica-Campos-Negocios-Imobiliarios/jessica-campos-imoveis/.open-next/server-functions/default/.next/server/chunks/Desenvolvimento ClientesJessica-Campos-Negocios-Imobiliariosjessica-campos-imoveis.open-nextserver-functionsdefault\node_modules\nextdistcompiled@vercelog\resvg.wasm"[0m
+  
+      .open-next/server-functions/default/handler.mjs:92:57:
+  [37m      92 │ ...it import([32m"g:/Desenvolvimento Clientes/Jessica-Campos-Negocios-[37m...
+           ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+  
+  
+  [31mX [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "g:/Desenvolvimento Clientes/Jessica-Campos-Negocios-Imobiliarios/jessica-campos-imoveis/.open-next/server-functions/default/.next/server/chunks/Desenvolvimento ClientesJessica-Campos-Negocios-Imobiliariosjessica-campos-imoveis.open-nextserver-functionsdefault\node_modules\nextdistcompiled@vercelogyoga.wasm"[0m
+  
+      .open-next/server-functions/default/handler.mjs:94:55:
+  [37m      94 │ ...it import([32m"g:/Desenvolvimento Clientes/Jessica-Campos-Negocios-[37m...
+           ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+  
+  
+  [31mX [41;31m[[41;97mERROR[41;31m][0m [1mENOENT: no such file or directory, open 'g:\Desenvolvimento Clientes\Jessica-Campos-Negocios-Imobiliarios\jessica-campos-imoveis\.open-next\server-functions\default\g:\Desenvolvimento Clientes\Jessica-Campos-Negocios-Imobiliarios\jessica-campos-imoveis\.open-next\server-functions\default\.next\server\chunks\ssr\Desenvolvimento ClientesJessica-Campos-Negocios-Imobiliariosjessica-campos-imoveis.open-nextserver-functionsdefaultsrcgeneratedprismaclientquery_engine_bg.wasm'[0m [1m[35m[plugin wrangler-module-collector][0m
+  
+      .open-next/server-functions/default/handler.mjs:94:20645:
+  [37m      94 │ ...it import([32m"g:/Desenvolvimento Clientes/Jessica-Campos-Negocios-[37m...
+           ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+  
+  
+  [31mX [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "g:/Desenvolvimento Clientes/Jessica-Campos-Negocios-Imobiliarios/jessica-campos-imoveis/.open-next/server-functions/default/.next/server/chunks/ssr/Desenvolvimento ClientesJessica-Campos-Negocios-Imobiliariosjessica-campos-imoveis.open-nextserver-functionsdefault\node_modules\nextdistcompiled@vercelog\resvg.wasm"[0m
+  
+      .open-next/server-functions/default/handler.mjs:96:57:
+  [37m      96 │ ...it import([32m"g:/Desenvolvimento Clientes/Jessica-Campos-Negocios-[37m...
+           ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+  
+  
+  [31mX [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "g:/Desenvolvimento Clientes/Jessica-Campos-Negocios-Imobiliarios/jessica-campos-imoveis/.open-next/server-functions/default/.next/server/chunks/ssr/Desenvolvimento ClientesJessica-Campos-Negocios-Imobiliariosjessica-campos-imoveis.open-nextserver-functionsdefault\node_modules\nextdistcompiled@vercelogyoga.wasm"[0m
+  
+      .open-next/server-functions/default/handler.mjs:98:55:
+  [37m      98 │ ...it import([32m"g:/Desenvolvimento Clientes/Jessica-Campos-Negocios-[37m...
+           ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+  
+  
+
+
+🪵  Logs were written to "C:\Users\Pichau\AppData\Roaming\xdg.config\.wrangler\logs\wrangler-2026-05-07_06-46-50_037.log"
+ERROR Wrangler deploy command failed:
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mThe local configuration being used (generated from your local configuration file) differs from the remote configuration of your Worker set via the Cloudflare Dashboard:[0m
+
+   {
+  [32m+  assets: {[39m
+  [32m+    binding: "ASSETS"[39m
+  [32m+  }[39m
+  [31m-  compatibility_date: "2026-04-30"[39m
+  [32m+  compatibility_date: "2025-04-01"[39m
+     vars: {
+  [31m-    ADMIN2_EMAIL: "jessicacnegociosimobiliarios@gmail.com"[39m
+  [31m-    ADMIN2_SENHA: "camiseta13@"[39m
+  [31m-    ADMIN_EMAIL: "jrcm2210@gmail.com"[39m
+  [31m-    ADMIN_SENHA: "camiseta13@"[39m
+  [31m-    JWT_SECRET: "d8f71e1728757752a05f3c8f9dcb5a45c4c0635ee8ee2a8ac478a7a985c032f6b27b25efd117dcba38ea4633611d7d2f"[39m
+  [31m-    NEXT_PUBLIC_APP_URL: "[4mhttps://jcni.jessicacnegociosimobiliarios.workers.dev"[39m[0m
+  [31m-    NEXT_PUBLIC_SITE_URL: "[4mhttps://jcni.jessicacnegociosimobiliarios.workers.dev"[39m[0m
+  [31m-    NEXT_PUBLIC_SUPABASE_ANON_KEY: "sb_publishable_X9tNPAtx-J76ia2JNYBEFw_-x9aCPDY"[39m
+  [31m-    NEXT_PUBLIC_SUPABASE_URL: "[4mhttps://yekqwhujqopegxuizlcq.supabase.co"[39m[0m
+  [31m-    NODE_ENV: "production"[39m
+  [31m-    NOTIFY_EMAIL: "jessicacnegociosimobiliarios@gmail.com"[39m
+  [31m-    RESEND_API_KEY: "re_LmKirLZJ_HiwWqfFQWRWe6zEB3foZkVWV"[39m
+  [31m-    RESEND_FROM: "JessicaCampos<onboarding@resend.dev>"[39m
+  [31m-    SUPABASE_SERVICE_ROLE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlla3F3aHVqcW9wZWd4dWl6bGNxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NzUwNDA1MiwiZXhwIjoyMDkzMDgwMDUyfQ.XoNsRdiKLw1rBO8uozWUkMyFIHehjpoy5fOUczofMwA"[39m
+     }
+   }
+  
+  
+  Deploying the Worker will override the remote configuration with your local one.
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mBuild failed with 6 errors:[0m
+
+  [31mX [41;31m[[41;97mERROR[41;31m][0m [1mENOENT: no such file or directory, open 'g:\Desenvolvimento Clientes\Jessica-Campos-Negocios-Imobiliarios\jessica-campos-imoveis\.open-next\server-functions\default\g:\Desenvolvimento Clientes\Jessica-Campos-Negocios-Imobiliarios\jessica-campos-imoveis\.open-next\server-functions\default\.next\server\chunks\Desenvolvimento ClientesJessica-Campos-Negocios-Imobiliariosjessica-campos-imoveis.open-nextserver-functionsdefaultsrcgeneratedprismaclientquery_engine_bg.wasm'[0m [1m[35m[plugin wrangler-module-collector][0m
+  
+      .open-next/server-functions/default/handler.mjs:90:47938:
+  [37m      90 │ ...it import([32m"g:/Desenvolvimento Clientes/Jessica-Campos-Negocios-[37m...
+           ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+  
+  
+  [31mX [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "g:/Desenvolvimento Clientes/Jessica-Campos-Negocios-Imobiliarios/jessica-campos-imoveis/.open-next/server-functions/default/.next/server/chunks/Desenvolvimento ClientesJessica-Campos-Negocios-Imobiliariosjessica-campos-imoveis.open-nextserver-functionsdefault\node_modules\nextdistcompiled@vercelog\resvg.wasm"[0m
+  
+      .open-next/server-functions/default/handler.mjs:92:57:
+  [37m      92 │ ...it import([32m"g:/Desenvolvimento Clientes/Jessica-Campos-Negocios-[37m...
+           ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+  
+  
+  [31mX [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "g:/Desenvolvimento Clientes/Jessica-Campos-Negocios-Imobiliarios/jessica-campos-imoveis/.open-next/server-functions/default/.next/server/chunks/Desenvolvimento ClientesJessica-Campos-Negocios-Imobiliariosjessica-campos-imoveis.open-nextserver-functionsdefault\node_modules\nextdistcompiled@vercelogyoga.wasm"[0m
+  
+      .open-next/server-functions/default/handler.mjs:94:55:
+  [37m      94 │ ...it import([32m"g:/Desenvolvimento Clientes/Jessica-Campos-Negocios-[37m...
+           ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+  
+  
+  [31mX [41;31m[[41;97mERROR[41;31m][0m [1mENOENT: no such file or directory, open 'g:\Desenvolvimento Clientes\Jessica-Campos-Negocios-Imobiliarios\jessica-campos-imoveis\.open-next\server-functions\default\g:\Desenvolvimento Clientes\Jessica-Campos-Negocios-Imobiliarios\jessica-campos-imoveis\.open-next\server-functions\default\.next\server\chunks\ssr\Desenvolvimento ClientesJessica-Campos-Negocios-Imobiliariosjessica-campos-imoveis.open-nextserver-functionsdefaultsrcgeneratedprismaclientquery_engine_bg.wasm'[0m [1m[35m[plugin wrangler-module-collector][0m
+  
+      .open-next/server-functions/default/handler.mjs:94:20645:
+  [37m      94 │ ...it import([32m"g:/Desenvolvimento Clientes/Jessica-Campos-Negocios-[37m...
+           ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+  
+  
+  [31mX [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "g:/Desenvolvimento Clientes/Jessica-Campos-Negocios-Imobiliarios/jessica-campos-imoveis/.open-next/server-functions/default/.next/server/chunks/ssr/Desenvolvimento ClientesJessica-Campos-Negocios-Imobiliariosjessica-campos-imoveis.open-nextserver-functionsdefault\node_modules\nextdistcompiled@vercelog\resvg.wasm"[0m
+  
+      .open-next/server-functions/default/handler.mjs:96:57:
+  [37m      96 │ ...it import([32m"g:/Desenvolvimento Clientes/Jessica-Campos-Negocios-[37m...
+           ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+  
+  
+  [31mX [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "g:/Desenvolvimento Clientes/Jessica-Campos-Negocios-Imobiliarios/jessica-campos-imoveis/.open-next/server-functions/default/.next/server/chunks/ssr/Desenvolvimento ClientesJessica-Campos-Negocios-Imobiliariosjessica-campos-imoveis.open-nextserver-functionsdefault\node_modules\nextdistcompiled@vercelogyoga.wasm"[0m
+  
+      .open-next/server-functions/default/handler.mjs:98:55:
+  [37m      98 │ ...it import([32m"g:/Desenvolvimento Clientes/Jessica-Campos-Negocios-[37m...
+           ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+  
+  
+
+
+🪵  Logs were written to "C:\Users\Pichau\AppData\Roaming\xdg.config\.wrangler\logs\wrangler-2026-05-07_06-46-50_037.log"
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1m[0m
+
+
+[32mIf you think this is a bug then please create an issue at https://github.com/cloudflare/workers-sdk/issues/new/choose[0m
+Note that there is a newer version of Wrangler available (4.88.0). Consider checking whether upgrading resolves this error.
+? Would you like to report this error to Cloudflare? Wrangler's output and the error details will be shared with the Wrangler team to help us diagnose and fix the issue.
+🤖 Using fallback value in non-interactive context: no
+🪵  Logs were written to "C:\Users\Pichau\AppData\Roaming\xdg.config\.wrangler\logs\wrangler-2026-05-07_06-46-43_012.log"

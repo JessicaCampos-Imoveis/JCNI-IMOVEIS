@@ -29,4 +29,10 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 Este projeto faz deploy no **Cloudflare Pages** usando o adapter **OpenNext**.
 
+Observacao importante em 07/05/2026: no plano gratuito atual, o deploy do app completo via Worker/OpenNext ficou bloqueado por limite de tamanho do bundle. Para manter custo zero, a direcao mais viavel e reduzir a parte runtime do app para uma estrategia mais estatica/lightweight no Pages em vez de insistir no mesmo bundle atual.
+
+Projeto Pages criado na conta auditada: `jessica-campos` -> `jessica-campos.pages.dev`.
+
+Runbook operacional desta migracao: `Documentos/CLOUDFLARE-PAGES-FREE-RUNBOOK.md`.
+
 Consulte `Documentos/PRD-MESTRE.md` — seção "Fases de Desenvolvimento / Fase 6" para o guia completo de deploy.

@@ -15,30 +15,23 @@ export default async function Image({
 }) {
   const { slug } = await params;
 
-  const imovel = await (async () => {
-    try {
-      return await prisma.imovel.findFirst({
-        where: { slugUrl: slug, deletadoEm: null },
-        select: {
-          titulo: true,
-          tipo: true,
-          bairro: true,
-          cidade: true,
-          preco: true,
-          quartos: true,
-          area: true,
-          fotos: {
-            select: { url: true, destaque: true },
-            orderBy: [{ destaque: "desc" }, { ordem: "asc" }],
-            take: 1,
-          },
-        },
-      });
-    } catch (error) {
-      console.warn("opengraph-image: fallback sem dados do banco.", error);
-      return null;
-    }
-  })();
+  const imovel = await prisma.imovel.findFirst({
+    where: { slugUrl: slug, deletadoEm: null },
+    select: {
+      titulo: true,
+      tipo: true,
+      bairro: true,
+      cidade: true,
+      preco: true,
+      quartos: true,
+      area: true,
+      fotos: {
+        select: { url: true, destaque: true },
+        orderBy: [{ destaque: "desc" }, { ordem: "asc" }],
+        take: 1,
+      },
+    },
+  });
 
   const fotoUrl = imovel?.fotos[0]?.url ?? null;
   const titulo = imovel?.titulo ?? "Imóvel";

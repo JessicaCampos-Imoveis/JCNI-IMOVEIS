@@ -13,6 +13,7 @@ export type PublicConfig = {
   logoUrl: string;
   logoAlt: string;
   jessicaFotoUrl: string;
+  jessicaFotoHeroUrl: string;
   heroTitulo: string;
   heroSubtitulo: string;
   sobreTitulo: string;
@@ -49,6 +50,7 @@ const DEFAULT: PublicConfig = {
   logoUrl: BRAND_SETTINGS.logo.imageUrl,
   logoAlt: BRAND_SETTINGS.logo.alt,
   jessicaFotoUrl: SITE_IMAGES.jessicaPortrait.url,
+  jessicaFotoHeroUrl: SITE_IMAGES.jessicaPortrait.url,
   heroTitulo: "",
   heroSubtitulo: "",
   sobreTitulo: "",
@@ -103,6 +105,7 @@ async function fetchConfig(): Promise<PublicConfig> {
       logoUrl: m["marca_logo_url"] || DEFAULT.logoUrl,
       logoAlt: DEFAULT.logoAlt,
       jessicaFotoUrl: m["marca_foto_jessica_url"] || DEFAULT.jessicaFotoUrl,
+      jessicaFotoHeroUrl: m["marca_foto_jessica_hero_url"] || DEFAULT.jessicaFotoHeroUrl,
       heroTitulo: m["texto_hero_titulo"] ?? DEFAULT.heroTitulo,
       heroSubtitulo: m["texto_hero_subtitulo"] ?? DEFAULT.heroSubtitulo,
       sobreTitulo: m["texto_sobre_titulo"] ?? DEFAULT.sobreTitulo,

@@ -1,0 +1,3 @@
+module.exports=[21423,a=>{"use strict";a.s(["default",()=>d,"metadata",()=>c]);var b=a.i(85349);let c={title:"Contato | JCNI",description:"Entre em contato com a Jéssica Campos para compra, venda ou locação de imóveis em Sorocaba e região.",alternates:{canonical:"/contato"},openGraph:{title:"Contato | JCNI",description:"Entre em contato com a Jéssica Campos para compra, venda ou locação de imóveis em Sorocaba e região.",url:`${b.SITE_CONFIG.siteUrl}/contato`,siteName:"JCNI – Jéssica Campos Negócios Imobiliários",locale:"pt_BR",type:"website"}};function d({children:a}){return a}}];
+
+//# sourceMappingURL=src_app_contato_layout_tsx_34ed8c71._.js.map

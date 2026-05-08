@@ -19,6 +19,17 @@ const TABS = [
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
 
+const TAB_DESCRIPTIONS: Record<TabId, string> = {
+  geral: "Logo, fotos, telefone, email e dados gerais do seu negócio.",
+  conteudo: "Customize os textos da página inicial e seção 'Sobre'.",
+  exibicao: "Escolha o que mostrar no site: IPTU, cômodos, link de financiamento.",
+  whatsapp: "Configure o número do WhatsApp para contato direto.",
+  notificacoes: "Email e integração com CRM para receber leads automaticamente.",
+  integracoes: "Analytics (GA4, Meta Pixel), chat ao vivo e scripts customizados.",
+  tema: "Escolha o tema visual: cores, fontes, aparência geral do site.",
+  webhooks: "Dispare ações automáticas quando algo muda (leads novos, imóvel vendido, etc).",
+};
+
 type Webhook = {
   id: string;
   nome: string;
@@ -93,8 +104,8 @@ function ImageUploadField({
 }: {
   label: string;
   currentUrl: string;
-  tipo: "logo" | "foto_jessica";
-  onUpload: (file: File, tipo: "logo" | "foto_jessica") => Promise<void>;
+  tipo: "logo" | "foto_jessica" | "foto_jessica_hero";
+  onUpload: (file: File, tipo: "logo" | "foto_jessica" | "foto_jessica_hero") => Promise<void>;
   uploadMsg: { text: string; ok: boolean } | null;
 }) {
   return (
@@ -208,7 +219,7 @@ export default function ConfiguracoesPage() {
     }
   }
 
-  async function uploadImagem(file: File, tipo: "logo" | "foto_jessica") {
+  async function uploadImagem(file: File, tipo: "logo" | "foto_jessica" | "foto_jessica_hero") {
     const fd = new FormData();
     fd.append("file", file);
     fd.append("tipo", tipo);
@@ -220,7 +231,12 @@ export default function ConfiguracoesPage() {
       });
       const data = await res.json();
       if (res.ok && data.url) {
-        const chave = tipo === "logo" ? "marca_logo_url" : "marca_foto_jessica_url";
+        const chave =
+          tipo === "logo"
+            ? "marca_logo_url"
+            : tipo === "foto_jessica"
+              ? "marca_foto_jessica_url"
+              : "marca_foto_jessica_hero_url";
         setCfg((prev) => ({ ...prev, [chave]: data.url }));
         setUploadMsg({ tipo, text: "Imagem enviada com sucesso.", ok: true });
       } else {
@@ -283,6 +299,7 @@ export default function ConfiguracoesPage() {
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
+            title={TAB_DESCRIPTIONS[t.id]}
             className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
               tab === t.id
                 ? "bg-white border border-b-white border-slate-200 text-amber-600 -mb-px"
@@ -292,6 +309,10 @@ export default function ConfiguracoesPage() {
             {t.label}
           </button>
         ))}
+      </div>
+
+      <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+        <p className="text-xs text-blue-700 font-medium">{TAB_DESCRIPTIONS[tab]}</p>
       </div>
 
       {msg && (
@@ -309,6 +330,9 @@ export default function ConfiguracoesPage() {
       {tab === "geral" && (
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-4">
+            <p className="text-sm text-slate-600">
+              Informações básicas sobre seu negócio. Estes dados aparecem em toda a parte pública do site.
+            </p>
             <Field label="Nome da empresa" name="empresa_nome" value={cfg.empresa_nome ?? ""} onChange={(v) => set("empresa_nome", v)} placeholder="Jessica Campos Negocios Imobiliarios" />
             <Field label="Telefone de contato" name="empresa_telefone" value={cfg.empresa_telefone ?? ""} onChange={(v) => set("empresa_telefone", v)} placeholder="(11) 99999-9999" />
             <Field label="E-mail de contato" name="empresa_email" value={cfg.empresa_email ?? ""} onChange={(v) => set("empresa_email", v)} type="email" placeholder="contato@jessicacampos.com" />
@@ -321,6 +345,18 @@ export default function ConfiguracoesPage() {
           <div className="flex flex-col gap-4">
             <p className="text-sm font-semibold text-slate-700">Imagens de marca</p>
 
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <p className="text-xs text-amber-800 font-medium mb-2 flex items-center gap-1">
+                <span>💡</span> Como suas imagens aparecem:
+              </p>
+              <ul className="text-xs text-amber-700 space-y-1 ml-5 list-disc">
+                <li><strong>Logo:</strong> Topo esquerdo do site e em emails</li>
+                <li><strong>Foto Corretor(a):</strong> Seção &quot;Sobre&quot; (foto quadrada, 400x400px recomendado)</li>
+                <li><strong>Foto Banner:</strong> Topo da página inicial (foto de corpo inteiro, 1400x800px recomendado)</li>
+              </ul>
+              <p className="text-xs text-amber-700 mt-2">Todas as imagens são otimizadas automaticamente em WebP para rápido carregamento.</p>
+            </div>
+
             <ImageUploadField
               label="Logo do site"
               currentUrl={cfg.marca_logo_url || BRAND_SETTINGS.logo.imageUrl}
@@ -330,15 +366,23 @@ export default function ConfiguracoesPage() {
             />
 
             <ImageUploadField
-              label="Foto da Jessica"
+              label="Foto Corretor(a)"
               currentUrl={cfg.marca_foto_jessica_url || SITE_IMAGES.jessicaPortrait.url}
               tipo="foto_jessica"
               onUpload={uploadImagem}
               uploadMsg={uploadMsg?.tipo === "foto_jessica" ? uploadMsg : null}
             />
-            <p className="text-xs text-slate-400">
-              Formatos aceitos: JPG, PNG ou WebP. Max 10MB. A imagem sera convertida para WebP automaticamente.
-            </p>
+
+            <ImageUploadField
+              label="Foto Banner"
+              currentUrl={cfg.marca_foto_jessica_hero_url || SITE_IMAGES.jessicaPortrait.url}
+              tipo="foto_jessica_hero"
+              onUpload={uploadImagem}
+              uploadMsg={uploadMsg?.tipo === "foto_jessica_hero" ? uploadMsg : null}
+            />
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-2">
+              <p className="text-xs text-blue-700">📸 <strong>Dica:</strong> use imagens de alta qualidade. A logo funciona bem com fundo transparente (PNG).</p>
+            </div>
           </div>
 
           <SaveBar saving={saving} onSave={salvar} />
@@ -347,8 +391,8 @@ export default function ConfiguracoesPage() {
 
       {tab === "conteudo" && (
         <div className="flex flex-col gap-4">
-          <p className="text-sm text-slate-500">
-            Textos editaveis do site publico. Deixe em branco para usar os textos padrao do sistema.
+          <p className="text-sm text-slate-600">
+            Customize os textos da página inicial (hero) e seção &quot;Sobre&quot;. Deixe em branco para usar os textos padrão do sistema.
           </p>
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium text-slate-700" htmlFor="texto_hero_titulo">
@@ -408,8 +452,8 @@ export default function ConfiguracoesPage() {
 
       {tab === "exibicao" && (
         <div className="flex flex-col gap-5">
-          <p className="text-sm text-slate-500">
-            Controla quais informacoes e funcionalidades aparecem no site publico.
+          <p className="text-sm text-slate-600">
+            Escolha quais informações aparecem nos anuncios de imóveis: IPTU, cômodos do imóvel, link de simulador de financiamento, etc.
           </p>
 
           <div className="flex flex-col gap-3">
@@ -496,6 +540,9 @@ export default function ConfiguracoesPage() {
 
       {tab === "tema" && (
         <div className="flex flex-col gap-6">
+          <p className="text-sm text-slate-600">
+            Customize a aparência visual do site: escolha o tema (moderno, classico, minimalista), o tipo de buscador e as cores principais.
+          </p>
           <p className="text-sm text-slate-500">
             Escolha o esquema de cores do site. A mudanca entra em vigor em ate 1 minuto apos salvar.
           </p>

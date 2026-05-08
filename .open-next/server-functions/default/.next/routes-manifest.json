@@ -1,0 +1,292 @@
+{
+  "version": 3,
+  "pages404": true,
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [],
+    "fallback": []
+  },
+  "dynamicRoutes": [
+    {
+      "page": "/admin/imoveis/[id]/editar",
+      "regex": "^/admin/imoveis/([^/]+?)/editar(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/admin/imoveis/(?<nxtPid>[^/]+?)/editar(?:/)?$"
+    },
+    {
+      "page": "/api/admin/comodidades/categorias/[id]",
+      "regex": "^/api/admin/comodidades/categorias/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/admin/comodidades/categorias/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/admin/comodidades/itens/[id]",
+      "regex": "^/api/admin/comodidades/itens/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/admin/comodidades/itens/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/admin/imoveis/[id]",
+      "regex": "^/api/admin/imoveis/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/admin/imoveis/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/admin/imoveis/[id]/comodos",
+      "regex": "^/api/admin/imoveis/([^/]+?)/comodos(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/admin/imoveis/(?<nxtPid>[^/]+?)/comodos(?:/)?$"
+    },
+    {
+      "page": "/api/admin/imoveis/[id]/comodos/[comodoId]",
+      "regex": "^/api/admin/imoveis/([^/]+?)/comodos/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid",
+        "nxtPcomodoId": "nxtPcomodoId"
+      },
+      "namedRegex": "^/api/admin/imoveis/(?<nxtPid>[^/]+?)/comodos/(?<nxtPcomodoId>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/admin/imoveis/[id]/fotos",
+      "regex": "^/api/admin/imoveis/([^/]+?)/fotos(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/admin/imoveis/(?<nxtPid>[^/]+?)/fotos(?:/)?$"
+    },
+    {
+      "page": "/api/admin/imoveis/[id]/fotos/reorder",
+      "regex": "^/api/admin/imoveis/([^/]+?)/fotos/reorder(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/admin/imoveis/(?<nxtPid>[^/]+?)/fotos/reorder(?:/)?$"
+    },
+    {
+      "page": "/api/admin/imoveis/[id]/fotos/[fotoId]",
+      "regex": "^/api/admin/imoveis/([^/]+?)/fotos/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid",
+        "nxtPfotoId": "nxtPfotoId"
+      },
+      "namedRegex": "^/api/admin/imoveis/(?<nxtPid>[^/]+?)/fotos/(?<nxtPfotoId>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/admin/leads/[id]",
+      "regex": "^/api/admin/leads/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/admin/leads/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/admin/webhooks/[id]",
+      "regex": "^/api/admin/webhooks/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/admin/webhooks/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/admin/webhooks/[id]/testar",
+      "regex": "^/api/admin/webhooks/([^/]+?)/testar(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/admin/webhooks/(?<nxtPid>[^/]+?)/testar(?:/)?$"
+    },
+    {
+      "page": "/api/imoveis/[slug]",
+      "regex": "^/api/imoveis/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug"
+      },
+      "namedRegex": "^/api/imoveis/(?<nxtPslug>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/xml/[portal]",
+      "regex": "^/api/xml/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPportal": "nxtPportal"
+      },
+      "namedRegex": "^/api/xml/(?<nxtPportal>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/imoveis/[slug]",
+      "regex": "^/imoveis/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug"
+      },
+      "namedRegex": "^/imoveis/(?<nxtPslug>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/imoveis/[slug]/opengraph-image",
+      "regex": "^/imoveis/([^/]+?)/opengraph\\-image(?:/)?$",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug"
+      },
+      "namedRegex": "^/imoveis/(?<nxtPslug>[^/]+?)/opengraph\\-image(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/admin",
+      "regex": "^/admin(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin(?:/)?$"
+    },
+    {
+      "page": "/admin/comodidades",
+      "regex": "^/admin/comodidades(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/comodidades(?:/)?$"
+    },
+    {
+      "page": "/admin/configuracoes",
+      "regex": "^/admin/configuracoes(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/configuracoes(?:/)?$"
+    },
+    {
+      "page": "/admin/configuracoes/chat",
+      "regex": "^/admin/configuracoes/chat(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/configuracoes/chat(?:/)?$"
+    },
+    {
+      "page": "/admin/imoveis",
+      "regex": "^/admin/imoveis(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/imoveis(?:/)?$"
+    },
+    {
+      "page": "/admin/imoveis/novo",
+      "regex": "^/admin/imoveis/novo(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/imoveis/novo(?:/)?$"
+    },
+    {
+      "page": "/admin/integracoes/portais",
+      "regex": "^/admin/integracoes/portais(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/integracoes/portais(?:/)?$"
+    },
+    {
+      "page": "/admin/integracoes/portais/guia",
+      "regex": "^/admin/integracoes/portais/guia(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/integracoes/portais/guia(?:/)?$"
+    },
+    {
+      "page": "/admin/leads",
+      "regex": "^/admin/leads(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/leads(?:/)?$"
+    },
+    {
+      "page": "/admin/login",
+      "regex": "^/admin/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/login(?:/)?$"
+    },
+    {
+      "page": "/alugar",
+      "regex": "^/alugar(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/alugar(?:/)?$"
+    },
+    {
+      "page": "/comprar",
+      "regex": "^/comprar(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/comprar(?:/)?$"
+    },
+    {
+      "page": "/contato",
+      "regex": "^/contato(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/contato(?:/)?$"
+    },
+    {
+      "page": "/favicon.ico",
+      "regex": "^/favicon\\.ico(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/favicon\\.ico(?:/)?$"
+    },
+    {
+      "page": "/imoveis",
+      "regex": "^/imoveis(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/imoveis(?:/)?$"
+    },
+    {
+      "page": "/politica-de-privacidade",
+      "regex": "^/politica\\-de\\-privacidade(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/politica\\-de\\-privacidade(?:/)?$"
+    },
+    {
+      "page": "/robots.txt",
+      "regex": "^/robots\\.txt(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/robots\\.txt(?:/)?$"
+    },
+    {
+      "page": "/sitemap.xml",
+      "regex": "^/sitemap\\.xml(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/sitemap\\.xml(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSuffix": ".prefetch.rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments"
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}
