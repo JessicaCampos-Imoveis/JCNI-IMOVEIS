@@ -47,10 +47,15 @@ export type PublicConfig = {
   whatsappNumero: string;
   contatoEmail: string;
   instagramUrl: string;
+  instagramAtivo: boolean;
   socialWhatsappUrl: string;
+  socialWhatsappAtivo: boolean;
   facebookUrl: string;
+  facebookAtivo: boolean;
   linkedinUrl: string;
+  linkedinAtivo: boolean;
   tiktokUrl: string;
+  tiktokAtivo: boolean;
   // OG Image para compartilhamento social
   ogImageUrl: string;
   // Radar JCNI
@@ -92,10 +97,15 @@ const DEFAULT: PublicConfig = {
   whatsappNumero: "",
   contatoEmail: SITE_CONFIG.email,
   instagramUrl: SITE_CONFIG.instagramUrl,
+  instagramAtivo: true,
   socialWhatsappUrl: "",
+  socialWhatsappAtivo: false,
   facebookUrl: "",
+  facebookAtivo: false,
   linkedinUrl: "",
+  linkedinAtivo: false,
   tiktokUrl: "",
+  tiktokAtivo: false,
   // OG Image
   ogImageUrl: "",
   // Radar JCNI
@@ -161,10 +171,15 @@ async function fetchConfig(): Promise<PublicConfig> {
       whatsappNumero: m["whatsapp_numero"] ?? "",
       contatoEmail: m["empresa_email"] ?? DEFAULT.contatoEmail,
       instagramUrl: m["social_instagram_url"] ?? DEFAULT.instagramUrl,
+      instagramAtivo: m["social_instagram_ativo"] ? m["social_instagram_ativo"] === "true" : Boolean(m["social_instagram_url"] ?? DEFAULT.instagramUrl),
       socialWhatsappUrl: m["social_whatsapp_url"] ?? DEFAULT.socialWhatsappUrl,
+      socialWhatsappAtivo: m["social_whatsapp_ativo"] === "true",
       facebookUrl: m["social_facebook_url"] ?? DEFAULT.facebookUrl,
+      facebookAtivo: m["social_facebook_ativo"] === "true",
       linkedinUrl: m["social_linkedin_url"] ?? DEFAULT.linkedinUrl,
+      linkedinAtivo: m["social_linkedin_ativo"] === "true",
       tiktokUrl: m["social_tiktok_url"] ?? DEFAULT.tiktokUrl,
+      tiktokAtivo: m["social_tiktok_ativo"] === "true",
       // OG Image
       ogImageUrl: m["og_image_url"] ?? "",
       // Radar JCNI

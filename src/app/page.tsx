@@ -346,10 +346,15 @@ export default async function Home({
         logoAlt={siteConfig.logoAlt}
         contatoEmail={siteConfig.contatoEmail}
         instagramUrl={siteConfig.instagramUrl}
+        instagramAtivo={siteConfig.instagramAtivo}
         facebookUrl={siteConfig.facebookUrl}
+        facebookAtivo={siteConfig.facebookAtivo}
         linkedinUrl={siteConfig.linkedinUrl}
+        linkedinAtivo={siteConfig.linkedinAtivo}
         tiktokUrl={siteConfig.tiktokUrl}
+        tiktokAtivo={siteConfig.tiktokAtivo}
         whatsappUrl={siteConfig.socialWhatsappUrl || (siteConfig.whatsappNumero ? `https://wa.me/${siteConfig.whatsappNumero}` : "")}
+        whatsappAtivo={siteConfig.socialWhatsappAtivo}
       />
     </main>
   );
@@ -534,27 +539,37 @@ function SiteFooter({
   logoAlt,
   contatoEmail,
   instagramUrl,
+  instagramAtivo,
   whatsappUrl,
+  whatsappAtivo,
   facebookUrl,
+  facebookAtivo,
   linkedinUrl,
+  linkedinAtivo,
   tiktokUrl,
+  tiktokAtivo,
 }: {
   logoUrl: string;
   logoAlt: string;
   contatoEmail: string;
   instagramUrl: string;
+  instagramAtivo: boolean;
   whatsappUrl: string;
+  whatsappAtivo: boolean;
   facebookUrl: string;
+  facebookAtivo: boolean;
   linkedinUrl: string;
+  linkedinAtivo: boolean;
   tiktokUrl: string;
+  tiktokAtivo: boolean;
 }) {
   const socialLinks = [
-    { key: "instagram", label: "Instagram", href: instagramUrl, icon: <IconInstagram /> },
-    { key: "whatsapp", label: "WhatsApp", href: whatsappUrl, icon: <IconWhatsApp /> },
-    { key: "facebook", label: "Facebook", href: facebookUrl, icon: <IconFacebook /> },
-    { key: "linkedin", label: "LinkedIn", href: linkedinUrl, icon: <IconLinkedIn /> },
-    { key: "tiktok", label: "TikTok", href: tiktokUrl, icon: <IconTikTok /> },
-  ].filter((item) => item.href);
+    { key: "instagram", label: "Instagram", href: instagramUrl, icon: <IconInstagram />, ativo: instagramAtivo },
+    { key: "whatsapp", label: "WhatsApp", href: whatsappUrl, icon: <IconWhatsApp />, ativo: whatsappAtivo },
+    { key: "facebook", label: "Facebook", href: facebookUrl, icon: <IconFacebook />, ativo: facebookAtivo },
+    { key: "linkedin", label: "LinkedIn", href: linkedinUrl, icon: <IconLinkedIn />, ativo: linkedinAtivo },
+    { key: "tiktok", label: "TikTok", href: tiktokUrl, icon: <IconTikTok />, ativo: tiktokAtivo },
+  ].filter((item) => item.href && item.ativo);
 
   return (
     <footer className="site-footer">
@@ -572,7 +587,9 @@ function SiteFooter({
         )}
         <p>{SITE_CONFIG.shortDescription}</p>
         {socialLinks.length > 0 && (
-          <div className="footer-socials" aria-label="Redes sociais">
+          <div className="footer-socials-wrap">
+            <span className="footer-socials-label">Siga nas redes</span>
+            <div className="footer-socials" aria-label="Redes sociais">
             {socialLinks.map((item) => (
               <a
                 key={item.key}
@@ -585,6 +602,7 @@ function SiteFooter({
                 {item.icon}
               </a>
             ))}
+            </div>
           </div>
         )}
       </div>

@@ -68,7 +68,7 @@ export default async function AdminDashboard() {
           ))}
         </div>
 
-        <div className="admin-panel">
+        <div className="admin-panel admin-panel--dashboard-controls">
           <div>
             <h2>Ações rápidas</h2>
             <p>Gerencie o acervo, acompanhe leads e ajuste as configurações do site.</p>
@@ -78,7 +78,7 @@ export default async function AdminDashboard() {
               <Link
                 key={label}
                 href={href}
-                className={accent ? "header-action" : "secondary-action"}
+                className={accent ? "admin-action admin-action--primary" : "admin-action"}
                 {...(blank ? { target: "_blank", rel: "noopener" } : {})}
               >
                 {label}

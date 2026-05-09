@@ -63,14 +63,16 @@ export default function AdminTopbar() {
       <header className="admin-topbar">
         <button
           type="button"
-          className="admin-mobile-menu-btn"
+          className={`admin-mobile-menu-btn${menuAberto ? " is-open" : ""}`}
           aria-label={menuAberto ? "Fechar menu" : "Abrir menu"}
           aria-expanded={menuAberto}
           aria-controls="admin-mobile-drawer"
           onClick={() => setMenuAberto((prev) => !prev)}
         >
           <span className="admin-mobile-menu-icon" aria-hidden="true">
-            {menuAberto ? "x" : "☰"}
+            <span />
+            <span />
+            <span />
           </span>
         </button>
 
@@ -117,6 +119,9 @@ export default function AdminTopbar() {
             onClick={() => setMenuAberto(false)}
           />
           <aside id="admin-mobile-drawer" className="admin-mobile-drawer" aria-label="Menu do painel">
+            <div className="admin-mobile-drawer-head">
+              <span className="admin-mobile-drawer-title">Navegacao do painel</span>
+            </div>
             <nav className="admin-mobile-nav">
               {NAV_LINKS.map((item) => (
                 <Link

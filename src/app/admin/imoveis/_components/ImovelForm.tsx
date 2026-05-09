@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
@@ -150,7 +150,38 @@ function CampoTexto({
   );
 }
 
-type IbgeMunicipio = { id: number; nome: string };
+type CidadesResponse = { cidades: string[]; total: number; error?: string };
+type BairrosResponse = { bairros: string[]; total: number; error?: string };
+
+const UFS: { value: string; label: string }[] = [
+  { value: "AC", label: "Acre (AC)" },
+  { value: "AL", label: "Alagoas (AL)" },
+  { value: "AP", label: "Amapa (AP)" },
+  { value: "AM", label: "Amazonas (AM)" },
+  { value: "BA", label: "Bahia (BA)" },
+  { value: "CE", label: "Ceara (CE)" },
+  { value: "DF", label: "Distrito Federal (DF)" },
+  { value: "ES", label: "Espirito Santo (ES)" },
+  { value: "GO", label: "Goias (GO)" },
+  { value: "MA", label: "Maranhao (MA)" },
+  { value: "MT", label: "Mato Grosso (MT)" },
+  { value: "MS", label: "Mato Grosso do Sul (MS)" },
+  { value: "MG", label: "Minas Gerais (MG)" },
+  { value: "PA", label: "Para (PA)" },
+  { value: "PB", label: "Paraiba (PB)" },
+  { value: "PR", label: "Parana (PR)" },
+  { value: "PE", label: "Pernambuco (PE)" },
+  { value: "PI", label: "Piaui (PI)" },
+  { value: "RJ", label: "Rio de Janeiro (RJ)" },
+  { value: "RN", label: "Rio Grande do Norte (RN)" },
+  { value: "RS", label: "Rio Grande do Sul (RS)" },
+  { value: "RO", label: "Rondonia (RO)" },
+  { value: "RR", label: "Roraima (RR)" },
+  { value: "SC", label: "Santa Catarina (SC)" },
+  { value: "SP", label: "Sao Paulo (SP)" },
+  { value: "SE", label: "Sergipe (SE)" },
+  { value: "TO", label: "Tocantins (TO)" },
+];
 
 function normalizarTexto(v: string): string {
   return v
@@ -171,23 +202,41 @@ function CampoCidadeIBGE({
   onChange: (v: string) => void;
   required?: boolean;
 }) {
-  const [cidades, setCidades] = useState<IbgeMunicipio[]>([]);
-  const [sugestoes, setSugestoes] = useState<IbgeMunicipio[]>([]);
+  const [cidades, setCidades] = useState<string[]>([]);
+  const [carregando, setCarregando] = useState(false);
+  const [erroCarga, setErroCarga] = useState("");
   const [aberto, setAberto] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    let ativo = true;
     const uf = (estado || "SP").toUpperCase();
-    fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`)
-      .then((r) => r.json())
-      .then((data: IbgeMunicipio[]) => {
-        if (Array.isArray(data)) {
-          setCidades(data.sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")));
-        }
+    setCarregando(true);
+    setErroCarga("");
+
+    fetch(`/api/admin/localidades/cidades?uf=${encodeURIComponent(uf)}`, { cache: "no-store" })
+      .then((r) => {
+        if (!r.ok) throw new Error("Falha ao carregar cidades");
+        return r.json();
+      })
+      .then((data: CidadesResponse) => {
+        if (!ativo) return;
+        const lista = Array.isArray(data.cidades) ? data.cidades : [];
+        setCidades(lista);
+        if (data.error) setErroCarga(data.error);
       })
       .catch(() => {
+        if (!ativo) return;
         setCidades([]);
+        setErroCarga("Nao foi possivel carregar as cidades agora.");
+      })
+      .finally(() => {
+        if (ativo) setCarregando(false);
       });
+
+    return () => {
+      ativo = false;
+    };
   }, [estado]);
 
   useEffect(() => {
@@ -200,77 +249,67 @@ function CampoCidadeIBGE({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  const sugestoes = useMemo(() => {
+    const q = normalizarTexto(value);
+    if (!q) return cidades;
+    return cidades.filter((c) => normalizarTexto(c).includes(q));
+  }, [cidades, value]);
+
   function handleInput(v: string) {
     onChange(v);
-    if (v.length >= 2 && cidades.length > 0) {
-      const q = normalizarTexto(v);
-      setSugestoes(cidades.filter((c) => normalizarTexto(c.nome).includes(q)).slice(0, 8));
-      setAberto(true);
-    } else {
-      setSugestoes([]);
-      setAberto(false);
-    }
+    setAberto(true);
   }
 
   function selecionar(cidade: string) {
     onChange(cidade);
-    setSugestoes([]);
     setAberto(false);
   }
 
   return (
-    <div className="campo" ref={wrapRef} style={{ position: "relative" }}>
+    <div className="campo" ref={wrapRef}>
       <label className="campo-label">
         Cidade{required && <span className="campo-req">*</span>}
       </label>
-      <input
-        type="text"
-        name="cidade"
-        value={value}
-        onChange={(e) => handleInput(e.target.value)}
-        onFocus={() => {
-          if (value.length >= 2 && sugestoes.length > 0) setAberto(true);
-        }}
-        required={required}
-        placeholder="Digite ou selecione a cidade"
-        className="campo-input"
-        autoComplete="off"
-      />
-      {aberto && sugestoes.length > 0 && (
-        <ul style={{
-          position: "absolute",
-          zIndex: 50,
-          top: "100%",
-          left: 0,
-          right: 0,
-          background: "#fff",
-          border: "1px solid #e2e8f0",
-          borderRadius: 8,
-          boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
-          listStyle: "none",
-          margin: "2px 0 0",
-          padding: "4px 0",
-          maxHeight: 220,
-          overflowY: "auto",
-        }}>
-          {sugestoes.map((c) => (
-            <li
-              key={c.id}
-              onMouseDown={(e) => { e.preventDefault(); selecionar(c.nome); }}
-              style={{
-                padding: "8px 14px",
-                fontSize: "0.85rem",
-                cursor: "pointer",
-                color: "#1e293b",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#f1f5f9")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "")}
-            >
-              {c.nome}
-            </li>
-          ))}
-        </ul>
-      )}
+      <div className="combobox-anchor">
+        <input
+          type="text"
+          name="cidade"
+          value={value}
+          onChange={(e) => handleInput(e.target.value)}
+          onFocus={() => setAberto(true)}
+          required={required}
+          placeholder="Digite ou selecione a cidade"
+          className="campo-input"
+          autoComplete="off"
+        />
+        {aberto && !carregando && sugestoes.length > 0 && (
+          <ul className="combobox-dropdown">
+            {sugestoes.map((c) => (
+              <li
+                key={c}
+                onMouseDown={(e) => { e.preventDefault(); selecionar(c); }}
+                style={{
+                  padding: "8px 14px",
+                  fontSize: "0.85rem",
+                  cursor: "pointer",
+                  color: "#1e293b",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#f1f5f9")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "")}
+              >
+                {c} - {(estado || "SP").toUpperCase()}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <span className="campo-hint">
+        {carregando
+          ? "Carregando cidades..."
+          : erroCarga
+            ? `${erroCarga} Voce pode digitar manualmente.`
+            : `${sugestoes.length.toLocaleString("pt-BR")} cidade(s) disponivel(is) para ${((estado || "SP").toUpperCase())}.`}
+      </span>
     </div>
   );
 }
@@ -290,9 +329,9 @@ function CampoBairroIBGE({
   required?: boolean;
 }) {
   const [bairros, setBairros] = useState<string[]>([]);
-  const [sugestoes, setSugestoes] = useState<string[]>([]);
   const [aberto, setAberto] = useState(false);
   const [carregando, setCarregando] = useState(false);
+  const [erroCarga, setErroCarga] = useState("");
   const wrapRef = useRef<HTMLDivElement>(null);
 
   // Carrega bairros a partir da cidade/UF escolhidas.
@@ -300,51 +339,40 @@ function CampoBairroIBGE({
     const cidadeTrim = cidade.trim();
     if (!cidadeTrim) {
       setBairros([]);
-      setSugestoes([]);
+      setErroCarga("");
       setAberto(false);
       return;
     }
 
+    let ativo = true;
     const uf = (estado || "SP").toUpperCase();
-    const cidadeNorm = normalizarTexto(cidadeTrim);
-    let cancelado = false;
     setCarregando(true);
+    setErroCarga("");
 
-    fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`)
-      .then((r) => r.json())
-      .then((municipios: IbgeMunicipio[]) => {
-        const municipio = Array.isArray(municipios)
-          ? municipios.find((m) => normalizarTexto(m.nome) === cidadeNorm)
-          : null;
-
-        if (!municipio) {
-          if (!cancelado) {
-            setBairros([]);
-            setSugestoes([]);
-          }
-          return;
-        }
-
-        return fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/municipios/${municipio.id}/subdistritos`)
-          .then((r) => r.json())
-          .then((data: { nome: string }[]) => {
-            if (!cancelado && Array.isArray(data)) {
-              setBairros(data.map((d) => d.nome).sort((a, b) => a.localeCompare(b, "pt-BR")));
-            }
-          });
+    fetch(`/api/admin/localidades/bairros?uf=${encodeURIComponent(uf)}&cidade=${encodeURIComponent(cidadeTrim)}`, {
+      cache: "no-store",
+    })
+      .then((r) => {
+        if (!r.ok) throw new Error("Falha ao carregar bairros");
+        return r.json();
+      })
+      .then((data: BairrosResponse) => {
+        if (!ativo) return;
+        const lista = Array.isArray(data.bairros) ? data.bairros : [];
+        setBairros(lista);
+        if (data.error) setErroCarga(data.error);
       })
       .catch(() => {
-        if (!cancelado) {
-          setBairros([]);
-          setSugestoes([]);
-        }
+        if (!ativo) return;
+        setBairros([]);
+        setErroCarga("Nao foi possivel carregar bairros agora.");
       })
       .finally(() => {
-        if (!cancelado) setCarregando(false);
+        if (ativo) setCarregando(false);
       });
 
     return () => {
-      cancelado = true;
+      ativo = false;
     };
   }, [cidade, estado]);
 
@@ -359,86 +387,72 @@ function CampoBairroIBGE({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  const sugestoes = useMemo(() => {
+    const q = normalizarTexto(value);
+    if (!q) return bairros;
+    return bairros.filter((b) => normalizarTexto(b).includes(q));
+  }, [bairros, value]);
+
   function handleInput(v: string) {
     onChange(v);
-    if (v.length >= 2 && bairros.length > 0) {
-      const q = normalizarTexto(v);
-      setSugestoes(bairros.filter((b) => normalizarTexto(b).includes(q)).slice(0, 8));
-      setAberto(true);
-    } else {
-      setSugestoes([]);
-      setAberto(false);
-    }
+    setAberto(true);
   }
 
   function selecionar(bairro: string) {
     onChange(bairro);
-    setSugestoes([]);
     setAberto(false);
   }
 
   return (
-    <div className="campo" ref={wrapRef} style={{ position: "relative" }}>
+    <div className="campo" ref={wrapRef}>
       <label className="campo-label">
         Bairro{required && <span className="campo-req">*</span>}
       </label>
-      <input
-        type="text"
-        name="bairro"
-        value={value}
-        onChange={(e) => handleInput(e.target.value)}
-        onFocus={() => {
-          if (value.length >= 2 && sugestoes.length > 0) setAberto(true);
-        }}
-        required={required}
-        placeholder={cidade.trim() ? "Digite ou selecione o bairro" : "Selecione a cidade para sugerir bairros"}
-        className="campo-input"
-        autoComplete="off"
-      />
+      <div className="combobox-anchor">
+        <input
+          type="text"
+          name="bairro"
+          value={value}
+          onChange={(e) => handleInput(e.target.value)}
+          onFocus={() => {
+            if (cidade.trim()) setAberto(true);
+          }}
+          required={required}
+          placeholder={cidade.trim() ? "Digite ou selecione o bairro" : "Selecione a cidade para sugerir bairros"}
+          className="campo-input"
+          autoComplete="off"
+        />
+        {aberto && sugestoes.length > 0 && (
+          <ul className="combobox-dropdown">
+            {sugestoes.map((b) => (
+              <li
+                key={b}
+                onMouseDown={(e) => { e.preventDefault(); selecionar(b); }}
+                style={{
+                  padding: "8px 14px",
+                  fontSize: "0.85rem",
+                  cursor: "pointer",
+                  color: "#1e293b",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#f1f5f9")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "")}
+              >
+                {b}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
       <span className="campo-hint">
         {carregando
           ? "Carregando bairros..."
           : cidade.trim()
             ? bairros.length > 0
-              ? "Digite ao menos 2 letras para sugerir bairros da cidade"
-              : "Cidade sem bairros IBGE encontrados (ou não reconhecida). Você pode digitar manualmente."
+              ? `Lista pronta com ${bairros.length.toLocaleString("pt-BR")} bairro(s). Digite para filtrar ou selecione.`
+              : "Cidade sem bairros encontrados. Voce pode digitar manualmente."
             : "Escolha a cidade para carregar sugestões automáticas de bairro."}
       </span>
-      {aberto && sugestoes.length > 0 && (
-        <ul style={{
-          position: "absolute",
-          zIndex: 50,
-          top: "100%",
-          left: 0,
-          right: 0,
-          background: "#fff",
-          border: "1px solid #e2e8f0",
-          borderRadius: 8,
-          boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
-          listStyle: "none",
-          margin: "2px 0 0",
-          padding: "4px 0",
-          maxHeight: 220,
-          overflowY: "auto",
-        }}>
-          {sugestoes.map((b) => (
-            <li
-              key={b}
-              onMouseDown={(e) => { e.preventDefault(); selecionar(b); }}
-              style={{
-                padding: "8px 14px",
-                fontSize: "0.85rem",
-                cursor: "pointer",
-                color: "#1e293b",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#f1f5f9")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "")}
-            >
-              {b}
-            </li>
-          ))}
-        </ul>
-      )}
+      {!carregando && erroCarga && <span className="campo-hint">{erroCarga} Usando complemento local/manual.</span>}
     </div>
   );
 }
@@ -458,24 +472,82 @@ function CampoSelect({
   required?: boolean;
   options: { value: string; label: string }[];
 }) {
+  const [aberto, setAberto] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setAberto(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const selecionada = options.find((o) => o.value === value)?.label ?? options[0]?.label ?? "Selecione";
+
   return (
-    <div className="campo">
+    <div className="campo" ref={wrapRef}>
       <label className="campo-label">
         {label}
         {required && <span className="campo-req">*</span>}
       </label>
-      <select
-        name={name}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        required={required}
-        className="campo-select"
-      >
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>{o.label}</option>
-        ))}
-      </select>
+      <div className="combobox-anchor">
+        <button
+          type="button"
+          className="campo-select campo-select-trigger"
+          aria-haspopup="listbox"
+          aria-expanded={aberto}
+          onClick={() => setAberto((prev) => !prev)}
+        >
+          <span>{selecionada}</span>
+          <span className="campo-select-caret" aria-hidden="true">▾</span>
+        </button>
+
+        {aberto && (
+          <ul className="combobox-dropdown" role="listbox" aria-label={label}>
+            {options.map((o) => (
+              <li key={o.value} role="option" aria-selected={o.value === value}>
+                <button
+                  type="button"
+                  className={`select-option-btn${o.value === value ? " active" : ""}`}
+                  onClick={() => {
+                    onChange(o.value);
+                    setAberto(false);
+                  }}
+                >
+                  {o.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <input type="hidden" name={name} value={value} required={required} />
     </div>
+  );
+}
+
+function CampoUF({
+  value,
+  onChange,
+  required,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  required?: boolean;
+}) {
+  return (
+    <CampoSelect
+      label="Estado (UF)"
+      name="estado"
+      value={(value || "SP").toUpperCase()}
+      onChange={onChange}
+      required={required}
+      options={UFS}
+    />
   );
 }
 
@@ -644,6 +716,7 @@ export function ImovelForm({ values, imovelId, onChange }: Props) {
   }
 
   const f = (field: keyof ImovelFormData) => (v: string) => onChange({ [field]: v });
+  const onEstadoChange = (v: string) => onChange({ estado: v.toUpperCase(), cidade: "", bairro: "" });
   const onCidadeChange = (v: string) => onChange({ cidade: v, bairro: "" });
 
   function numericOrUndef(v: string): number | undefined {
@@ -767,7 +840,8 @@ export function ImovelForm({ values, imovelId, onChange }: Props) {
             <CampoTexto label="Preço (R$)" name="preco" value={values.preco} onChange={f("preco")} required type="number" placeholder="Ex: 450000" />
           </div>
 
-          <div className="grid-2">
+          <div className="grid-3">
+            <CampoUF value={values.estado} onChange={onEstadoChange} required />
             <CampoCidadeIBGE value={values.cidade} estado={values.estado} onChange={onCidadeChange} required />
             <CampoBairroIBGE value={values.bairro} cidade={values.cidade} estado={values.estado} onChange={f("bairro")} required />
           </div>
@@ -838,7 +912,7 @@ export function ImovelForm({ values, imovelId, onChange }: Props) {
           <p className="aviso-privado">🔒 Dados privados — não são exibidos no site público</p>
           <div className="grid-2">
             <CampoTexto label="CEP" name="cep" value={values.cep} onChange={f("cep")} />
-            <CampoTexto label="Estado" name="estado" value={values.estado} onChange={f("estado")} />
+            <CampoUF value={values.estado} onChange={onEstadoChange} />
           </div>
           <div className="grid-3">
             <div style={{ gridColumn: "span 2" }}>
@@ -1028,10 +1102,12 @@ export function ImovelForm({ values, imovelId, onChange }: Props) {
       <style>{`
         .imovel-form { display: flex; flex-direction: column; gap: 0; }
 
-        .abas { display: flex; border-bottom: 2px solid #e5e7eb; gap: 0; margin-bottom: 0; overflow-x: auto; }
-        .aba-btn { padding: 0.625rem 1.25rem; background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-size: 0.875rem; font-weight: 500; color: #6b7280; white-space: nowrap; margin-bottom: -2px; }
-        .aba-btn:hover { color: #1f2937; }
-        .aba-ativa { color: #2563eb !important; border-bottom-color: #2563eb !important; }
+        .abas { display: flex; gap: 0.4rem; margin-bottom: 0; overflow-x: auto; padding: 0.2rem 0 0.4rem; scrollbar-width: thin; }
+        .abas::-webkit-scrollbar { height: 6px; }
+        .abas::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 999px; }
+        .aba-btn { padding: 0.45rem 0.75rem; background: #fff; border: 1px solid #d1d5db; border-radius: 999px; cursor: pointer; font-size: 0.78rem; font-weight: 600; color: #6b7280; white-space: nowrap; flex: 0 0 auto; }
+        .aba-btn:hover { color: #1f2937; border-color: #9ca3af; }
+        .aba-ativa { color: #1d4ed8 !important; border-color: #93c5fd !important; background: #eff6ff !important; }
 
         .aba-conteudo { display: flex; flex-direction: column; gap: 1rem; padding: 1.25rem 0; }
 
@@ -1042,6 +1118,13 @@ export function ImovelForm({ values, imovelId, onChange }: Props) {
         .campo-input, .campo-select, .campo-textarea { padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.875rem; background: #fff; width: 100%; box-sizing: border-box; }
         .campo-input:focus, .campo-select:focus, .campo-textarea:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
         .campo-textarea { resize: vertical; }
+        .combobox-anchor { position: relative; }
+        .combobox-dropdown { position: absolute; z-index: 80; top: calc(100% + 2px); left: 0; right: 0; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.13); list-style: none; margin: 0; padding: 4px 0; max-height: 220px; overflow-y: auto; }
+        .campo-select-trigger { display: inline-flex; align-items: center; justify-content: space-between; text-align: left; cursor: pointer; }
+        .campo-select-caret { font-size: 0.72rem; color: #6b7280; margin-left: 8px; }
+        .select-option-btn { width: 100%; border: 0; background: transparent; text-align: left; padding: 8px 12px; font-size: 0.85rem; color: #1f2937; cursor: pointer; }
+        .select-option-btn:hover { background: #f3f4f6; }
+        .select-option-btn.active { background: #eff6ff; color: #1d4ed8; font-weight: 700; }
 
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
@@ -1095,6 +1178,8 @@ export function ImovelForm({ values, imovelId, onChange }: Props) {
         @media (max-width: 640px) {
           .grid-2, .grid-3 { grid-template-columns: 1fr; }
           .grid-3 > div[style] { grid-column: auto !important; }
+          .abas { gap: 0.3rem; padding-bottom: 0.5rem; }
+          .aba-btn { padding: 0.4rem 0.62rem; font-size: 0.72rem; }
         }
       `}</style>
     </form>

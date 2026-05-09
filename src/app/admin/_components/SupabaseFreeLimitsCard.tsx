@@ -47,6 +47,16 @@ function pctClass(p: number | null): string {
   return "ok";
 }
 
+function formatNumber(v: number | null): string {
+  if (v == null) return "-";
+  return v.toLocaleString("pt-BR");
+}
+
+function clampPct(v: number | null): number {
+  if (v == null || Number.isNaN(v)) return 0;
+  return Math.min(Math.max(v, 0), 100);
+}
+
 export function SupabaseFreeLimitsCard() {
   const [data, setData] = useState<FreeUsageResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -88,13 +98,17 @@ export function SupabaseFreeLimitsCard() {
     return dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   }, [data?.updatedAt]);
 
+  const fileStoragePct = data?.percentages.fileStorage ?? null;
+  const databasePct = data?.percentages.database ?? null;
+  const mauPct = data?.percentages.monthlyActiveUsers ?? null;
+
   return (
-    <section className="admin-panel free-limits-panel" aria-labelledby="supabase-free-limits">
+    <section className="free-limits-panel" aria-labelledby="supabase-free-limits">
       <div className="free-limits-head">
         <div>
-          <h2 id="supabase-free-limits">Limites do plano Free (Supabase)</h2>
+          <h2 id="supabase-free-limits">Limites de Banco de Dados e Infraestrutura</h2>
           <p>
-            Monitoramento em tempo real do que é possível via API/DB do projeto. Atualização automática a cada 60s.
+            Painel compacto com consumo e teto de recursos criticos do projeto. Atualizacao automatica a cada 60s.
           </p>
         </div>
         <span className="free-limits-updated">Atualizado: {atualizadoEm}</span>
@@ -104,59 +118,133 @@ export function SupabaseFreeLimitsCard() {
       {!loading && error && <p className="free-limits-error">{error}</p>}
 
       {!loading && !error && data && (
-        <div className="free-limits-table" role="table" aria-label="Limites do plano free">
-          <div className="free-limits-row" role="row">
-            <span role="cell">File storage</span>
-            <span role="cell">{formatBytes(data.usage.fileStorageBytes)}</span>
-            <span role="cell">{formatBytes(data.limits.fileStorageBytes)}</span>
-            <span className={`pill ${pctClass(data.percentages.fileStorage)}`} role="cell">
-              {data.percentages.fileStorage == null ? "-" : `${data.percentages.fileStorage}%`}
-            </span>
-          </div>
+        <div className="free-limits-grid" aria-label="Limites de banco de dados e infraestrutura">
+          <article className="free-limit-card" aria-label="File storage">
+            <div className="free-limit-card-head">
+              <h3>File storage</h3>
+              <span className={`pill ${pctClass(fileStoragePct)}`}>
+                {fileStoragePct == null ? "-" : `${fileStoragePct}%`}
+              </span>
+            </div>
+            <div className="free-limit-values">
+              <p>
+                <span>Uso</span>
+                <strong>{formatBytes(data.usage.fileStorageBytes)}</strong>
+              </p>
+              <p>
+                <span>Limite</span>
+                <strong>{formatBytes(data.limits.fileStorageBytes)}</strong>
+              </p>
+            </div>
+            <div className="free-limits-meter" aria-label="Capacidade de file storage">
+              <span className={`free-limits-meter-fill ${pctClass(fileStoragePct)}`} style={{ width: `${clampPct(fileStoragePct)}%` }} />
+            </div>
+          </article>
 
-          <div className="free-limits-row" role="row">
-            <span role="cell">Database size</span>
-            <span role="cell">{formatBytes(data.usage.databaseBytes)}</span>
-            <span role="cell">{formatBytes(data.limits.databaseBytes)}</span>
-            <span className={`pill ${pctClass(data.percentages.database)}`} role="cell">
-              {data.percentages.database == null ? "-" : `${data.percentages.database}%`}
-            </span>
-          </div>
+          <article className="free-limit-card" aria-label="Database size">
+            <div className="free-limit-card-head">
+              <h3>Database size</h3>
+              <span className={`pill ${pctClass(databasePct)}`}>
+                {databasePct == null ? "-" : `${databasePct}%`}
+              </span>
+            </div>
+            <div className="free-limit-values">
+              <p>
+                <span>Uso</span>
+                <strong>{formatBytes(data.usage.databaseBytes)}</strong>
+              </p>
+              <p>
+                <span>Limite</span>
+                <strong>{formatBytes(data.limits.databaseBytes)}</strong>
+              </p>
+            </div>
+            <div className="free-limits-meter" aria-label="Capacidade de database size">
+              <span className={`free-limits-meter-fill ${pctClass(databasePct)}`} style={{ width: `${clampPct(databasePct)}%` }} />
+            </div>
+          </article>
 
-          <div className="free-limits-row" role="row">
-            <span role="cell">Monthly active users</span>
-            <span role="cell">{data.usage.monthlyActiveUsers ?? "-"}</span>
-            <span role="cell">{data.limits.monthlyActiveUsers.toLocaleString("pt-BR")}</span>
-            <span className={`pill ${pctClass(data.percentages.monthlyActiveUsers)}`} role="cell">
-              {data.percentages.monthlyActiveUsers == null ? "-" : `${data.percentages.monthlyActiveUsers}%`}
-            </span>
-          </div>
+          <article className="free-limit-card" aria-label="Monthly active users">
+            <div className="free-limit-card-head">
+              <h3>Monthly active users</h3>
+              <span className={`pill ${pctClass(mauPct)}`}>
+                {mauPct == null ? "-" : `${mauPct}%`}
+              </span>
+            </div>
+            <div className="free-limit-values">
+              <p>
+                <span>Uso</span>
+                <strong>{formatNumber(data.usage.monthlyActiveUsers)}</strong>
+              </p>
+              <p>
+                <span>Limite</span>
+                <strong>{data.limits.monthlyActiveUsers.toLocaleString("pt-BR")}</strong>
+              </p>
+            </div>
+            <div className="free-limits-meter" aria-label="Capacidade de monthly active users">
+              <span className={`free-limits-meter-fill ${pctClass(mauPct)}`} style={{ width: `${clampPct(mauPct)}%` }} />
+            </div>
+          </article>
 
-          <div className="free-limits-row" role="row">
-            <span role="cell">Egress</span>
-            <span role="cell">-</span>
-            <span role="cell">{formatBytes(data.limits.egressBytes)}</span>
-            <span className="pill" role="cell">Painel Supabase</span>
-          </div>
+          <article className="free-limit-card free-limit-card--external" aria-label="Egress">
+            <div className="free-limit-card-head">
+              <h3>Egress</h3>
+              <span className="pill">Painel Supabase</span>
+            </div>
+            <div className="free-limit-values">
+              <p>
+                <span>Uso</span>
+                <strong>-</strong>
+              </p>
+              <p>
+                <span>Limite</span>
+                <strong>{formatBytes(data.limits.egressBytes)}</strong>
+              </p>
+            </div>
+            <p className="free-limit-note">{data.notes.egressBytes}</p>
+          </article>
 
-          <div className="free-limits-row" role="row">
-            <span role="cell">Cached egress</span>
-            <span role="cell">-</span>
-            <span role="cell">{formatBytes(data.limits.cachedEgressBytes)}</span>
-            <span className="pill" role="cell">Painel Supabase</span>
-          </div>
+          <article className="free-limit-card free-limit-card--external" aria-label="Cached egress">
+            <div className="free-limit-card-head">
+              <h3>Cached egress</h3>
+              <span className="pill">Painel Supabase</span>
+            </div>
+            <div className="free-limit-values">
+              <p>
+                <span>Uso</span>
+                <strong>-</strong>
+              </p>
+              <p>
+                <span>Limite</span>
+                <strong>{formatBytes(data.limits.cachedEgressBytes)}</strong>
+              </p>
+            </div>
+            <p className="free-limit-note">{data.notes.cachedEgressBytes}</p>
+          </article>
 
-          <div className="free-limits-row" role="row">
-            <span role="cell">API requests</span>
-            <span role="cell">Ilimitado</span>
-            <span role="cell">Ilimitado</span>
-            <span className="pill ok" role="cell">OK</span>
-          </div>
+          <article className="free-limit-card" aria-label="API requests">
+            <div className="free-limit-card-head">
+              <h3>API requests</h3>
+              <span className="pill ok">Sem teto</span>
+            </div>
+            <div className="free-limit-values">
+              <p>
+                <span>Uso</span>
+                <strong>Ilimitado</strong>
+              </p>
+              <p>
+                <span>Limite</span>
+                <strong>Ilimitado</strong>
+              </p>
+            </div>
+            <div className="free-limits-meter" aria-hidden>
+              <span className="free-limits-meter-fill ok" style={{ width: "100%" }} />
+            </div>
+          </article>
         </div>
       )}
 
       <p className="free-limits-footnote">
-        Egress e Cached Egress não têm endpoint público confiável por projeto no Supabase. Para esses dois itens, a fonte oficial continua sendo a tela de Billing/Usage do Supabase.
+        Egress e Cached Egress nao tem endpoint publico confiavel por projeto no Supabase. Para esses dois itens, a fonte oficial continua sendo a tela de Billing/Usage do Supabase.
       </p>
     </section>
   );

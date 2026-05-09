@@ -138,6 +138,48 @@ model Lead {
   utmCampaign String?
   origem      String?    // "contato" | "chat_ia" | "visita" | "radar"
   criadoEm   DateTime   @default(now())
+
+  // CRM operacional
+  responsavel  String?
+  proximaAcao  String?
+  motivoPerda  String?
+
+  notas      LeadNota[]
+  tarefas    LeadTarefa[]
+  atividades LeadAtividade[]
+}
+
+model LeadNota {
+  id       String   @id @default(cuid())
+  leadId   String
+  lead     Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  texto    String
+  criadaEm DateTime @default(now())
+}
+
+model LeadTarefa {
+  id          String           @id @default(cuid())
+  leadId      String
+  lead        Lead             @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  titulo      String
+  tipo        String           @default("FOLLOW_UP")
+  dataHora    String?
+  responsavel String?
+  observacao  String?
+  status      LeadTarefaStatus @default(PENDENTE)
+  criadaEm   DateTime         @default(now())
+}
+
+model LeadAtividade {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  tipo      String
+  titulo    String
+  descricao String
+  origem    String?
+  tone      String?
+  criadaEm  DateTime @default(now())
 }
 
 // ─── CONFIGURAÇÕES ───────────────────────────────────────────────────────────
@@ -201,4 +243,9 @@ enum LeadStatus {
   PROPOSTA
   FECHADO
   PERDIDO
+}
+
+enum LeadTarefaStatus {
+  PENDENTE
+  CONCLUIDA
 }

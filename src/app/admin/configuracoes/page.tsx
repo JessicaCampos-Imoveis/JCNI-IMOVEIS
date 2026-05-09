@@ -215,6 +215,35 @@ function Toggle({
   );
 }
 
+function SocialField({
+  label,
+  value,
+  active,
+  onToggle,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  active: boolean;
+  onToggle: (v: boolean) => void;
+  onChange: (v: string) => void;
+  placeholder: string;
+}) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-3">
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <div>
+          <p className="text-sm font-semibold text-slate-800">{label}</p>
+          <p className="text-xs text-slate-500">Mostra o icone elegante no rodape quando estiver ativo.</p>
+        </div>
+        <Toggle id={`toggle_${label}`} label={active ? "Ativo" : "Desativado"} checked={active} onChange={onToggle} />
+      </div>
+      <Field label={`URL do ${label}`} name={label.toLowerCase()} value={value} onChange={onChange} placeholder={placeholder} />
+    </div>
+  );
+}
+
 function ImageUploadField({
   label,
   currentUrl,
@@ -412,7 +441,7 @@ export default function ConfiguracoesPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[300px]">
+      <div className="flex items-center justify-center min-h-75">
         <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -497,45 +526,52 @@ export default function ConfiguracoesPage() {
             <p className="text-sm font-semibold text-slate-700">Redes sociais e contatos</p>
             <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
               <p className="text-xs text-slate-600">
-                Estes links aparecem no rodapé público do site com os ícones oficiais. O e-mail abaixo também alimenta o contato do rodapé.
+                Estes links aparecem no rodapé público do site com os ícones oficiais. Ative apenas o que quiser exibir.
               </p>
             </div>
 
-            <Field
-              label="Instagram"
-              name="social_instagram_url"
-              value={cfg.social_instagram_url ?? ""}
-              onChange={(v) => set("social_instagram_url", v)}
-              placeholder="https://instagram.com/..."
-            />
-            <Field
-              label="WhatsApp (link direto opcional)"
-              name="social_whatsapp_url"
-              value={cfg.social_whatsapp_url ?? ""}
-              onChange={(v) => set("social_whatsapp_url", v)}
-              placeholder="https://wa.me/5511999999999"
-            />
-            <Field
-              label="Facebook"
-              name="social_facebook_url"
-              value={cfg.social_facebook_url ?? ""}
-              onChange={(v) => set("social_facebook_url", v)}
-              placeholder="https://facebook.com/..."
-            />
-            <Field
-              label="LinkedIn"
-              name="social_linkedin_url"
-              value={cfg.social_linkedin_url ?? ""}
-              onChange={(v) => set("social_linkedin_url", v)}
-              placeholder="https://linkedin.com/in/..."
-            />
-            <Field
-              label="TikTok"
-              name="social_tiktok_url"
-              value={cfg.social_tiktok_url ?? ""}
-              onChange={(v) => set("social_tiktok_url", v)}
-              placeholder="https://tiktok.com/@..."
-            />
+            <div className="grid gap-3">
+              <SocialField
+                label="Instagram"
+                value={cfg.social_instagram_url ?? ""}
+                active={cfg.social_instagram_ativo !== "false"}
+                onToggle={(v) => set("social_instagram_ativo", v ? "true" : "false")}
+                onChange={(v) => set("social_instagram_url", v)}
+                placeholder="https://instagram.com/..."
+              />
+              <SocialField
+                label="WhatsApp"
+                value={cfg.social_whatsapp_url ?? ""}
+                active={cfg.social_whatsapp_ativo === "true"}
+                onToggle={(v) => set("social_whatsapp_ativo", v ? "true" : "false")}
+                onChange={(v) => set("social_whatsapp_url", v)}
+                placeholder="https://wa.me/5511999999999"
+              />
+              <SocialField
+                label="Facebook"
+                value={cfg.social_facebook_url ?? ""}
+                active={cfg.social_facebook_ativo === "true"}
+                onToggle={(v) => set("social_facebook_ativo", v ? "true" : "false")}
+                onChange={(v) => set("social_facebook_url", v)}
+                placeholder="https://facebook.com/..."
+              />
+              <SocialField
+                label="LinkedIn"
+                value={cfg.social_linkedin_url ?? ""}
+                active={cfg.social_linkedin_ativo === "true"}
+                onToggle={(v) => set("social_linkedin_ativo", v ? "true" : "false")}
+                onChange={(v) => set("social_linkedin_url", v)}
+                placeholder="https://linkedin.com/in/..."
+              />
+              <SocialField
+                label="TikTok"
+                value={cfg.social_tiktok_url ?? ""}
+                active={cfg.social_tiktok_ativo === "true"}
+                onToggle={(v) => set("social_tiktok_ativo", v ? "true" : "false")}
+                onChange={(v) => set("social_tiktok_url", v)}
+                placeholder="https://tiktok.com/@..."
+              />
+            </div>
           </div>
 
           <div className="flex flex-col gap-4">
@@ -873,10 +909,10 @@ export default function ConfiguracoesPage() {
                   <div key={key} className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold flex-shrink-0">{sigla.slice(0, 2)}</span>
+                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold shrink-0">{sigla.slice(0, 2)}</span>
                         <span className="text-sm font-semibold text-slate-800">{nome}</span>
                       </div>
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border flex-shrink-0 ${ativo ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-400 border-slate-200"}`}>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border shrink-0 ${ativo ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-400 border-slate-200"}`}>
                         {ativo ? "Configurado" : "Inativo"}
                       </span>
                     </div>
@@ -992,7 +1028,7 @@ export default function ConfiguracoesPage() {
             <div>
               <p className="text-sm font-semibold text-slate-800">Scripts customizados</p>
               <div className="mt-1.5 px-3 py-2.5 bg-amber-50 border border-amber-200 rounded-xl flex gap-2">
-                <span className="text-amber-500 text-xs mt-0.5 flex-shrink-0">⚠</span>
+                <span className="text-amber-500 text-xs mt-0.5 shrink-0">⚠</span>
                 <p className="text-xs text-amber-700 leading-relaxed">
                   Cole apenas scripts de fontes confiaveis. Aceita snippet completo com <code className="bg-amber-100 px-1 rounded">&lt;script&gt;</code> ou apenas JS puro. Scripts maliciosos comprometem o site e os visitantes.
                 </p>
