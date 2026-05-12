@@ -546,28 +546,31 @@ export default function ConfiguracoesPage() {
       )}
 
       {tab === "geral" && (
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col gap-4">
-            <p className="text-sm text-slate-600">
-              Informações básicas sobre seu negócio. Estes dados aparecem em toda a parte pública do site.
-            </p>
+        <div className="flex flex-col gap-4">
+          <AccordionSection
+            title="Informações da empresa"
+            subtitle="Nome, telefone, e-mail, endereço e CRECI — aparecem no site público."
+            defaultOpen={true}
+          >
+            <div className="flex flex-col gap-4 pt-1">
             <Field label="Nome da empresa" name="empresa_nome" value={cfg.empresa_nome ?? ""} onChange={(v) => set("empresa_nome", v)} placeholder="Jessica Campos Negocios Imobiliarios" />
             <Field label="Telefone de contato" name="empresa_telefone" value={cfg.empresa_telefone ?? ""} onChange={(v) => set("empresa_telefone", v)} placeholder="(11) 99999-9999" />
             <Field label="E-mail de contato" name="empresa_email" value={cfg.empresa_email ?? ""} onChange={(v) => set("empresa_email", v)} type="email" placeholder="contato@jessicacampos.com" />
             <Field label="Endereco" name="empresa_endereco" value={cfg.empresa_endereco ?? ""} onChange={(v) => set("empresa_endereco", v)} placeholder="Rua, numero - Bairro, Cidade - UF" />
             <Field label="CRECI" name="empresa_creci" value={cfg.empresa_creci ?? ""} onChange={(v) => set("empresa_creci", v)} placeholder="CRECI 123456" />
-          </div>
+            </div>
+          </AccordionSection>
 
-          <hr className="border-slate-200" />
-
-          <div className="flex flex-col gap-4">
-            <p className="text-sm font-semibold text-slate-700">Redes sociais e contatos</p>
+          <AccordionSection
+            title="Redes sociais"
+            subtitle="Links exibidos no rodapé do site. Ative apenas o que quiser mostrar."
+          >
+            <div className="flex flex-col gap-3 pt-1">
             <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
               <p className="text-xs text-slate-600">
                 Estes links aparecem no rodapé público do site com os ícones oficiais. Ative apenas o que quiser exibir.
               </p>
             </div>
-
             <div className="grid gap-3">
               <SocialField
                 label="Instagram"
@@ -610,11 +613,14 @@ export default function ConfiguracoesPage() {
                 placeholder="https://tiktok.com/@..."
               />
             </div>
-          </div>
+            </div>
+          </AccordionSection>
 
-          <div className="flex flex-col gap-4">
-            <p className="text-sm font-semibold text-slate-700">Imagens de marca</p>
-
+          <AccordionSection
+            title="Imagens de marca"
+            subtitle="Logo, foto da corretora e imagens do banner principal."
+          >
+            <div className="flex flex-col gap-4 pt-1">
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
               <p className="text-xs text-amber-800 font-medium mb-2 flex items-center gap-1">
                 <span>💡</span> Como suas imagens aparecem:
@@ -662,7 +668,8 @@ export default function ConfiguracoesPage() {
             <div className="rounded-lg bg-slate-50 border border-slate-200 p-2">
               <p className="text-xs text-slate-500">🖼️ <strong>Fundo do hero:</strong> imagem exibida como plano de fundo no banner principal. Recomendado 1920×1080px, formato paisagem. Deixe sem imagem para usar o padrão do tema.</p>
             </div>
-          </div>
+            </div>
+          </AccordionSection>
 
           <SaveBar saving={saving} onSave={salvar} />
         </div>
