@@ -583,8 +583,8 @@ h3 {
   padding: 52px 5vw;
 }
 
-.site-footer nav,
-.site-footer div:last-child {
+.site-footer > nav,
+.site-footer > div:last-child {
   display: grid;
   align-content: start;
   gap: 12px;
@@ -595,11 +595,24 @@ h3 {
   color: var(--color-footer-text);
 }
 
+.footer-socials-wrap {
+  margin-top: 18px;
+}
+
+.footer-socials-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-footer-text), transparent 40%);
+  margin-bottom: 10px;
+}
+
 .footer-socials {
-  display: flex;
+  display: flex !important;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 14px;
 }
 
 .footer-socials a {
