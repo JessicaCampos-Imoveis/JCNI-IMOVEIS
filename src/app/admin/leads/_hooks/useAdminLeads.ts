@@ -20,6 +20,16 @@ export function useAdminLeads() {
 
   // ID do lead cujo detalhe está sendo carregado (para evitar carregar 2x)
   const [carregandoDetalheId, setCarregandoDetalheId] = useState<string | null>(null);
+  // lock por operacao no drawer (ex: "nota-<leadId>", "tarefa-<leadId>", "concluir-<tarefaId>")
+  const [salvandoDrawer, setSalvandoDrawer] = useState<Set<string>>(new Set());
+
+  const _setDrawerLock = useCallback((key: string, on: boolean) => {
+    setSalvandoDrawer((prev) => {
+      const next = new Set(prev);
+      if (on) next.add(key); else next.delete(key);
+      return next;
+    });
+  }, []);
 
   const carregarLeads = useCallback(async () => {
     setCarregando(true);
@@ -205,28 +215,52 @@ export function useAdminLeads() {
   const adicionarNota = useCallback(async (leadId: string, texto: string) => {
     const nota = texto.trim();
     if (!nota) return;
+    const lockKey = `nota-${leadId}`;
+    if (salvandoDrawer.has(lockKey)) return;
+    _setDrawerLock(lockKey, true);
     // otimista: adiciona localmente imediatamente
     const tempId = `temp-note-${Date.now()}`;
     setLeadNotas((prev) => ({
       ...prev,
       [leadId]: [...(prev[leadId] ?? []), { id: tempId, texto: nota, criadaEm: new Date().toISOString() }],
     }));
-    const res = await fetch(`/api/admin/leads/${leadId}/notas`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ texto: nota }),
-    });
-    if (res.ok) {
+    try {
+      const res = await fetch(`/api/admin/leads/${leadId}/notas`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ texto: nota }),
+      });
+      if (!res.ok) {
+        // rollback
+        setLeadNotas((prev) => ({
+          ...prev,
+          [leadId]: (prev[leadId] ?? []).filter((n) => n.id !== tempId),
+        }));
+        const body = await res.json().catch(() => ({}));
+        setToastErro((body as { error?: string }).error ?? "Erro ao salvar nota");
+        return;
+      }
       const criada = await res.json();
       setLeadNotas((prev) => ({
         ...prev,
-        [leadId]: (prev[leadId] ?? []).map((n) => (n.id === tempId ? criada : n)),
+        [leadId]: (prev[leadId] ?? []).map((n) => (n.id === tempId ? (criada as LeadNote) : n)),
       }));
+    } catch {
+      setLeadNotas((prev) => ({
+        ...prev,
+        [leadId]: (prev[leadId] ?? []).filter((n) => n.id !== tempId),
+      }));
+      setToastErro("Erro ao salvar nota");
+    } finally {
+      _setDrawerLock(lockKey, false);
     }
-  }, []);
+  }, [salvandoDrawer, _setDrawerLock]);
 
   const criarTarefa = useCallback(async (leadId: string, tarefa: { titulo: string; dataHora: string; responsavel: string; observacao: string; tipo: LeadTask["tipo"] }) => {
     if (!tarefa.titulo.trim()) return;
+    const lockKey = `tarefa-${leadId}`;
+    if (salvandoDrawer.has(lockKey)) return;
+    _setDrawerLock(lockKey, true);
     const tempId = `temp-task-${Date.now()}`;
     const tempTask: LeadTask = {
       id: tempId,
@@ -238,33 +272,74 @@ export function useAdminLeads() {
       tipo: tarefa.tipo,
     };
     setLeadTarefas((prev) => ({ ...prev, [leadId]: [...(prev[leadId] ?? []), tempTask] }));
-    const res = await fetch(`/api/admin/leads/${leadId}/tarefas`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ titulo: tempTask.titulo, tipo: tempTask.tipo, dataHora: tempTask.dataHora, responsavel: tempTask.responsavel, observacao: tempTask.observacao }),
-    });
-    if (res.ok) {
+    try {
+      const res = await fetch(`/api/admin/leads/${leadId}/tarefas`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ titulo: tempTask.titulo, tipo: tempTask.tipo, dataHora: tempTask.dataHora, responsavel: tempTask.responsavel, observacao: tempTask.observacao }),
+      });
+      if (!res.ok) {
+        // rollback
+        setLeadTarefas((prev) => ({
+          ...prev,
+          [leadId]: (prev[leadId] ?? []).filter((t) => t.id !== tempId),
+        }));
+        const body = await res.json().catch(() => ({}));
+        setToastErro((body as { error?: string }).error ?? "Erro ao criar tarefa");
+        return;
+      }
       const criada = await res.json();
       setLeadTarefas((prev) => ({
         ...prev,
-        [leadId]: (prev[leadId] ?? []).map((t) => (t.id === tempId ? { ...criada, quando: criada.criadaEm } : t)),
+        [leadId]: (prev[leadId] ?? []).map((t) => (t.id === tempId ? ({ ...criada, quando: (criada as { criadaEm?: string }).criadaEm } as LeadTask) : t)),
       }));
+    } catch {
+      setLeadTarefas((prev) => ({
+        ...prev,
+        [leadId]: (prev[leadId] ?? []).filter((t) => t.id !== tempId),
+      }));
+      setToastErro("Erro ao criar tarefa");
+    } finally {
+      _setDrawerLock(lockKey, false);
     }
-  }, []);
+  }, [salvandoDrawer, _setDrawerLock]);
 
   const concluirTarefa = useCallback(async (leadId: string, tarefaId: string) => {
+    const lockKey = `concluir-${tarefaId}`;
+    if (salvandoDrawer.has(lockKey)) return;
     const tarefaAtual = (leadTarefas[leadId] ?? []).find((t) => t.id === tarefaId);
-    const novoStatus = tarefaAtual?.status === "CONCLUIDA" ? "PENDENTE" : "CONCLUIDA";
+    const statusAnterior = tarefaAtual?.status ?? "PENDENTE";
+    const novoStatus = statusAnterior === "CONCLUIDA" ? "PENDENTE" : "CONCLUIDA";
+    _setDrawerLock(lockKey, true);
+    // update otimista
     setLeadTarefas((prev) => ({
       ...prev,
       [leadId]: (prev[leadId] ?? []).map((t) => (t.id === tarefaId ? { ...t, status: novoStatus } : t)),
     }));
-    void fetch(`/api/admin/leads/${leadId}/tarefas/${tarefaId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: novoStatus }),
-    });
-  }, [leadTarefas]);
+    try {
+      const res = await fetch(`/api/admin/leads/${leadId}/tarefas/${tarefaId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: novoStatus }),
+      });
+      if (!res.ok) {
+        // rollback
+        setLeadTarefas((prev) => ({
+          ...prev,
+          [leadId]: (prev[leadId] ?? []).map((t) => (t.id === tarefaId ? { ...t, status: statusAnterior } : t)),
+        }));
+        setToastErro("Erro ao atualizar tarefa");
+      }
+    } catch {
+      setLeadTarefas((prev) => ({
+        ...prev,
+        [leadId]: (prev[leadId] ?? []).map((t) => (t.id === tarefaId ? { ...t, status: statusAnterior } : t)),
+      }));
+      setToastErro("Erro ao atualizar tarefa");
+    } finally {
+      _setDrawerLock(lockKey, false);
+    }
+  }, [leadTarefas, salvandoDrawer, _setDrawerLock]);
 
   const registrarVisita = useCallback(async (leadId: string, dataHora: string, observacao: string) => {
     await criarTarefa(leadId, { titulo: "Visita ao imóvel", dataHora, responsavel: "Jéssica Campos", observacao, tipo: "VISITA" });
@@ -315,6 +390,7 @@ export function useAdminLeads() {
     toastErro,
     setToastErro,
     salvandoLeadId,
+    salvandoDrawer,
     leadResponsavel,
     leadProximaAcao,
     leadNotas,
