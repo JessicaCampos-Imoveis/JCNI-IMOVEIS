@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { LeadActivityEvent, LeadItem, LeadLossReason, LeadNote, LeadStatus, LeadTask } from "../_lib/types";
 import { STATUS_COLOR, STATUS_LABEL, statusTemperatura } from "../_lib/types";
 
@@ -103,6 +103,10 @@ export function LeadDrawer({
 }: Props) {
   const [notaTexto, setNotaTexto] = useState("");
   const [acaoTexto, setAcaoTexto] = useState(proximaAcao ?? "");
+  const [responsavelDraft, setResponsavelDraft] = useState(responsavel);
+
+  // Sincroniza quando um lead diferente é aberto (prop vem do carregarDetalhe)
+  useEffect(() => { setResponsavelDraft(responsavel); }, [responsavel]);
   const [tarefaTitulo, setTarefaTitulo] = useState("");
   const [tarefaDataHora, setTarefaDataHora] = useState("");
   const [tarefaResponsavel, setTarefaResponsavel] = useState(responsavel || "Jéssica Campos");
@@ -255,8 +259,13 @@ export function LeadDrawer({
                   Responsável
                 </label>
                 <input
-                  value={responsavel}
-                  onChange={(e) => onResponsavelChange(e.target.value)}
+                  value={responsavelDraft}
+                  onChange={(e) => setResponsavelDraft(e.target.value)}
+                  onBlur={() => {
+                    if (responsavelDraft.trim() !== responsavel) {
+                      onResponsavelChange(responsavelDraft.trim());
+                    }
+                  }}
                   placeholder="Jéssica Campos"
                   style={inputStyle}
                 />
