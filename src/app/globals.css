@@ -2472,49 +2472,75 @@ h3 {
 }
 
 @media (max-width: 620px) {
+  /* ── Hero: foto em cima, card de busca embaixo (padrão Loft) ─────────── */
   .hero-section {
-    min-height: 500px;
-    align-items: end;
-    padding: 0 20px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    min-height: auto;
+    padding: 0;
+    overflow: visible;
   }
 
+  /* hero-media vira bloco de fluxo com altura fixa — a foto ocupa o topo */
   .hero-media {
-    background:
-      linear-gradient(to bottom, rgba(18, 18, 18, 0.06) 40%, rgba(18, 18, 18, 0.52) 100%),
-      var(--home-hero-image),
-      linear-gradient(135deg, #e7dfd4 0%, #f8f4ee 45%, #d8c8b8 100%);
-    background-position: center;
-    background-size: cover;
+    position: relative;
+    inset: unset;
+    flex: 0 0 auto;
+    height: clamp(240px, 72vw, 360px);
+    overflow: hidden;
+    background: linear-gradient(135deg, #e7dfd4 0%, #f8f4ee 45%, #d8c8b8 100%);
   }
 
+  /* gradiente na base da foto para suavizar transição com o card */
+  .hero-media-gradient {
+    background: linear-gradient(to bottom, rgba(18, 18, 18, 0.04) 30%, rgba(18, 18, 18, 0.38) 100%);
+  }
+
+  /* retrato da Jessica: oculto no mobile — a foto de fundo conta a história */
   .hero-media::after {
-    bottom: auto;
-    top: 0;
-    right: 0;
-    width: min(55vw, 200px);
-    height: clamp(240px, 52vw, 310px);
-    border-radius: 0 0 0 24px;
-    opacity: 0.85;
+    display: none;
   }
 
+  /* card de conteúdo sobe ~32px sobre a foto (overlap sutil) */
   .hero-content {
+    position: relative;
+    z-index: 5;
     width: 100%;
     max-width: 100%;
-    border-radius: 26px;
-    padding: 24px;
+    margin-top: -32px;
+    border-radius: 26px 26px 0 0;
+    padding: 26px 20px 32px;
+    background: rgba(255, 255, 255, 0.99);
+    box-shadow: 0 -10px 36px rgba(45, 39, 31, 0.10);
   }
 
+  /* ── Search panel ────────────────────────────────────────────────────── */
   .search-row {
+    flex-direction: column;
+    align-items: stretch;
     gap: 10px;
-    border-radius: 28px;
+    border-radius: 18px;
     padding: 12px;
+  }
+
+  .search-row input {
+    padding: 0 6px;
   }
 
   .search-row button {
     width: 100%;
+    border-radius: 999px;
+    min-height: 46px;
   }
 
-  .search-row,
+  .search-tabs {
+    gap: 16px;
+    margin-bottom: 14px;
+    border-bottom-color: var(--color-border);
+  }
+
+  /* ── outros elementos ────────────────────────────────────────────────── */
   .empty-properties,
   .section-heading.inline,
   .admin-heading,
