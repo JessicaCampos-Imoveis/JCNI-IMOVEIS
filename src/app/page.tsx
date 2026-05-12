@@ -236,7 +236,7 @@ export default async function Home({
       <section className="hero-section">
         <div className="hero-media" style={heroStyle} aria-hidden="true">
           <Image
-            src={SITE_IMAGES.homeHero.url}
+            src={siteConfig.heroBgUrl}
             alt=""
             fill
             priority

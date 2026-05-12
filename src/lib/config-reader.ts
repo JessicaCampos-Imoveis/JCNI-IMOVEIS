@@ -58,6 +58,8 @@ export type PublicConfig = {
   tiktokAtivo: boolean;
   // OG Image para compartilhamento social
   ogImageUrl: string;
+  // Hero background
+  heroBgUrl: string;
   // Radar JCNI
   radarTitulo: string;
   radarCardDescricao: string;
@@ -108,6 +110,8 @@ const DEFAULT: PublicConfig = {
   tiktokAtivo: false,
   // OG Image
   ogImageUrl: "",
+  // Hero background
+  heroBgUrl: SITE_IMAGES.homeHero.url,
   // Radar JCNI
   radarTitulo: "Receba indicações quando surgir um imóvel compatível com seu perfil",
   radarCardDescricao: "Score de compatibilidade, motivos de match e contato direto via WhatsApp — tudo pelo painel da Jéssica.",
@@ -182,6 +186,8 @@ async function fetchConfig(): Promise<PublicConfig> {
       tiktokAtivo: m["social_tiktok_ativo"] === "true",
       // OG Image
       ogImageUrl: m["og_image_url"] ?? "",
+      // Hero background
+      heroBgUrl: m["hero_bg_url"] || DEFAULT.heroBgUrl,
       // Radar JCNI
       radarTitulo: m["radar_titulo"] ?? DEFAULT.radarTitulo,
       radarCardDescricao: m["radar_card_descricao"] ?? DEFAULT.radarCardDescricao,

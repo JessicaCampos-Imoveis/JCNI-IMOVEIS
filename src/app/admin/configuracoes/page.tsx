@@ -116,7 +116,43 @@ type Webhook = {
   ativo: boolean;
 };
 
-type ImageUploadTipo = "logo" | "foto_jessica" | "foto_jessica_hero" | "og_image";
+type ImageUploadTipo = "logo" | "foto_jessica" | "foto_jessica_hero" | "og_image" | "hero_bg";
+
+function AccordionSection({
+  title,
+  subtitle,
+  children,
+  defaultOpen = false,
+}: {
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className={`rounded-xl border transition-colors ${open ? "border-amber-200 bg-white" : "border-slate-200 bg-slate-50"}`}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left"
+        aria-expanded={open}
+      >
+        <div>
+          <p className="text-sm font-semibold text-slate-800">{title}</p>
+          {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
+        </div>
+        <span
+          className={`shrink-0 w-5 h-5 flex items-center justify-center text-slate-400 transition-transform duration-200 ${open ? "rotate-180 text-amber-500" : ""}`}
+          aria-hidden="true"
+        >
+          ▾
+        </span>
+      </button>
+      {open && <div className="px-4 pb-4">{children}</div>}
+    </div>
+  );
+}
 
 function ConteudoCard({
   titulo,
@@ -393,7 +429,9 @@ export default function ConfiguracoesPage() {
               ? "marca_foto_jessica_url"
               : tipo === "foto_jessica_hero"
                 ? "marca_foto_jessica_hero_url"
-                : "og_image_url";
+                : tipo === "hero_bg"
+                  ? "hero_bg_url"
+                  : "og_image_url";
         setCfg((prev) => ({ ...prev, [chave]: data.url }));
         setUploadMsg({ tipo, text: "Imagem enviada com sucesso.", ok: true });
       } else {
@@ -584,7 +622,8 @@ export default function ConfiguracoesPage() {
               <ul className="text-xs text-amber-700 space-y-1 ml-5 list-disc">
                 <li><strong>Logo:</strong> Topo esquerdo do site e em emails</li>
                 <li><strong>Foto Corretor(a):</strong> Seção &quot;Sobre&quot; (foto quadrada, 400x400px recomendado)</li>
-                <li><strong>Foto Banner:</strong> Topo da página inicial (foto de corpo inteiro, 1400x800px recomendado)</li>
+                <li><strong>Foto Banner:</strong> Retrato da corretora sobreposto ao hero (corpo inteiro, 1400x800px recomendado)</li>
+                <li><strong>Fundo do Banner:</strong> Imagem de fundo do hero principal (paisagem, 1920×1080px recomendado)</li>
               </ul>
               <p className="text-xs text-amber-700 mt-2">Todas as imagens são otimizadas automaticamente em WebP para rápido carregamento.</p>
             </div>
@@ -606,14 +645,22 @@ export default function ConfiguracoesPage() {
             />
 
             <ImageUploadField
-              label="Foto Banner"
+              label="Foto Banner (retrato da corretora)"
               currentUrl={cfg.marca_foto_jessica_hero_url || SITE_IMAGES.jessicaPortrait.url}
               tipo="foto_jessica_hero"
               onUpload={uploadImagem}
               uploadMsg={uploadMsg?.tipo === "foto_jessica_hero" ? uploadMsg : null}
             />
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-2">
-              <p className="text-xs text-blue-700">📸 <strong>Dica:</strong> use imagens de alta qualidade. A logo funciona bem com fundo transparente (PNG).</p>
+
+            <ImageUploadField
+              label="Imagem de Fundo do Banner (Hero)"
+              currentUrl={cfg.hero_bg_url || ""}
+              tipo="hero_bg"
+              onUpload={uploadImagem}
+              uploadMsg={uploadMsg?.tipo === "hero_bg" ? uploadMsg : null}
+            />
+            <div className="rounded-lg bg-slate-50 border border-slate-200 p-2">
+              <p className="text-xs text-slate-500">🖼️ <strong>Fundo do hero:</strong> imagem exibida como plano de fundo no banner principal. Recomendado 1920×1080px, formato paisagem. Deixe sem imagem para usar o padrão do tema.</p>
             </div>
           </div>
 
@@ -886,14 +933,13 @@ export default function ConfiguracoesPage() {
       )}
 
       {tab === "integracoes" && (
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-4">
 
           {/* Analytics */}
-          <section>
-            <div className="mb-3">
-              <p className="text-sm font-semibold text-slate-800">Analytics e rastreamento</p>
-              <p className="text-xs text-slate-400 mt-0.5">Os scripts sao injetados automaticamente em todas as paginas. Deixe em branco para desativar o servico.</p>
-            </div>
+          <AccordionSection
+            title="Analytics e rastreamento"
+            subtitle="Scripts injetados automaticamente em todas as páginas. Deixe em branco para desativar."
+          >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
                 { key: "ga_measurement_id", nome: "Google Analytics 4", sigla: "GA4", placeholder: "G-XXXXXXXXXX", dica: "Measurement ID" },
@@ -928,16 +974,13 @@ export default function ConfiguracoesPage() {
                 );
               })}
             </div>
-          </section>
-
-          <hr className="border-slate-200" />
+          </AccordionSection>
 
           {/* Chat ao vivo */}
-          <section>
-            <div className="mb-3">
-              <p className="text-sm font-semibold text-slate-800">Chat ao vivo</p>
-              <p className="text-xs text-slate-400 mt-0.5">Apenas um provedor pode estar ativo por vez. O widget aparece em todas as paginas publicas.</p>
-            </div>
+          <AccordionSection
+            title="Chat ao vivo"
+            subtitle="Widget de chat externo. Apenas um provedor ativo por vez."
+          >
             <div className="flex flex-wrap gap-3 mb-4">
               {(["none", "tawk", "jivo", "crisp"] as const).map((p) => {
                 const ativo = (cfg.chat_ao_vivo_provider ?? "none") === p;
@@ -974,16 +1017,13 @@ export default function ConfiguracoesPage() {
                 />
               </div>
             )}
-          </section>
-
-          <hr className="border-slate-200" />
+          </AccordionSection>
 
           {/* CRM */}
-          <section>
-            <div className="mb-3">
-              <p className="text-sm font-semibold text-slate-800">CRM externo</p>
-              <p className="text-xs text-slate-400 mt-0.5">Quando ativo, leads capturados no site sao enviados automaticamente para o CRM escolhido.</p>
-            </div>
+          <AccordionSection
+            title="CRM externo"
+            subtitle="Quando ativo, leads são enviados automaticamente para o CRM escolhido."
+          >
             <div className="flex flex-col gap-3">
               {[
                 { toggleKey: "crm_rdstation_ativo", tokenKey: "crm_rdstation_token", nome: "RD Station Marketing", placeholder: "seu-token-publico-rd", labelToken: "Token publico do RD Station" },
@@ -1019,48 +1059,48 @@ export default function ConfiguracoesPage() {
                 );
               })}
             </div>
-          </section>
-
-          <hr className="border-slate-200" />
+          </AccordionSection>
 
           {/* Scripts livres */}
-          <section className="flex flex-col gap-4">
-            <div>
-              <p className="text-sm font-semibold text-slate-800">Scripts customizados</p>
-              <div className="mt-1.5 px-3 py-2.5 bg-amber-50 border border-amber-200 rounded-xl flex gap-2">
+          <AccordionSection
+            title="Scripts customizados"
+            subtitle="Cole JavaScript de fontes confiáveis para carregar em todas as páginas."
+          >
+            <div className="flex flex-col gap-4">
+              <div className="px-3 py-2.5 bg-amber-50 border border-amber-200 rounded-xl flex gap-2">
                 <span className="text-amber-500 text-xs mt-0.5 shrink-0">⚠</span>
                 <p className="text-xs text-amber-700 leading-relaxed">
                   Cole apenas scripts de fontes confiaveis. Aceita snippet completo com <code className="bg-amber-100 px-1 rounded">&lt;script&gt;</code> ou apenas JS puro. Scripts maliciosos comprometem o site e os visitantes.
                 </p>
               </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-slate-700" htmlFor="script_head">
+                  Antes de <code className="bg-slate-100 px-1 rounded text-xs">&lt;/head&gt;</code> — em todas as paginas
+                </label>
+                <textarea
+                  id="script_head"
+                  value={cfg.script_head ?? ""}
+                  onChange={(e) => set("script_head", e.target.value)}
+                  rows={4}
+                  placeholder={"<script>\n  // seu codigo aqui\n</script>"}
+                  className="border border-slate-200 rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-amber-500 resize-y bg-slate-50"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-slate-700" htmlFor="script_body">
+                  Antes de <code className="bg-slate-100 px-1 rounded text-xs">&lt;/body&gt;</code> — em todas as paginas
+                </label>
+                <textarea
+                  id="script_body"
+                  value={cfg.script_body ?? ""}
+                  onChange={(e) => set("script_body", e.target.value)}
+                  rows={4}
+                  placeholder={"<script>\n  // seu codigo aqui\n</script>"}
+                  className="border border-slate-200 rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-amber-500 resize-y bg-slate-50"
+                />
+              </div>
             </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-slate-700" htmlFor="script_head">
-                Antes de <code className="bg-slate-100 px-1 rounded text-xs">&lt;/head&gt;</code> — em todas as paginas
-              </label>
-              <textarea
-                id="script_head"
-                value={cfg.script_head ?? ""}
-                onChange={(e) => set("script_head", e.target.value)}
-                rows={4}
-                placeholder={"<script>\n  // seu codigo aqui\n</script>"}
-                className="border border-slate-200 rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-amber-500 resize-y bg-slate-50"
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-slate-700" htmlFor="script_body">
-                Antes de <code className="bg-slate-100 px-1 rounded text-xs">&lt;/body&gt;</code> — em todas as paginas
-              </label>
-              <textarea
-                id="script_body"
-                value={cfg.script_body ?? ""}
-                onChange={(e) => set("script_body", e.target.value)}
-                rows={4}
-                placeholder={"<script>\n  // seu codigo aqui\n</script>"}
-                className="border border-slate-200 rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-amber-500 resize-y bg-slate-50"
-              />
-            </div>
-          </section>
+          </AccordionSection>
 
           <SaveBar saving={saving} onSave={salvar} />
         </div>

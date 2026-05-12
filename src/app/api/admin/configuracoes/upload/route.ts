@@ -16,6 +16,7 @@ const TIPOS_PERMITIDOS: Record<string, { chave: string; maxDim: number }> = {
   foto_jessica: { chave: "marca_foto_jessica_url", maxDim: 1200 },
   foto_jessica_hero: { chave: "marca_foto_jessica_hero_url", maxDim: 1400 },
   og_image: { chave: "og_image_url", maxDim: 1600 },
+  hero_bg: { chave: "hero_bg_url", maxDim: 1920 },
 };
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB

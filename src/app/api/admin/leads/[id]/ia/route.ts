@@ -203,7 +203,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     }
 
     const model = buildModel(conf.chat_provider, apiKey);
-    const { text } = await generateText({ model, prompt, maxTokens: 600 });
+    const { text } = await generateText({ model, prompt, maxOutputTokens: 600 });
 
     return NextResponse.json({ resultado: text.trim() });
   } catch (err) {
