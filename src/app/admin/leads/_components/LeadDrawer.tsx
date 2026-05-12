@@ -4,6 +4,22 @@ import { useEffect, useState } from "react";
 import type { LeadActivityEvent, LeadItem, LeadLossReason, LeadNote, LeadStatus, LeadTask } from "../_lib/types";
 import { STATUS_COLOR, STATUS_LABEL, statusTemperatura } from "../_lib/types";
 
+type SimilarImovel = {
+  id: string;
+  codigo: string;
+  titulo: string;
+  tipo: string;
+  finalidade: string;
+  preco: number;
+  bairro: string;
+  cidade: string;
+  area: number | null;
+  quartos: number | null;
+  vagas: number | null;
+  slugUrl: string;
+  fotos: { url: string }[];
+};
+
 type Props = {
   lead: LeadItem | null;
   open: boolean;
@@ -116,6 +132,27 @@ export function LeadDrawer({
   const [visitaObs, setVisitaObs] = useState("");
   const [propostaObs, setPropostaObs] = useState("");
 
+  // Fase 4.4 — Inteligencia assistiva
+  const [iaLoading, setIaLoading] = useState(false);
+  const [iaResult, setIaResult] = useState("");
+  const [iaAcaoAtiva, setIaAcaoAtiva] = useState<"resumo" | "sugestao" | "mensagem" | null>(null);
+  const [similares, setSimilares] = useState<SimilarImovel[]>([]);
+  const [similaresCarregando, setSimilaresCarregando] = useState(false);
+
+  // Reset IA quando lead muda
+  useEffect(() => { setIaResult(""); setIaAcaoAtiva(null); }, [lead?.id]);
+
+  // Carregar imoveis similares quando drawer abre
+  useEffect(() => {
+    if (!lead || !open) return;
+    setSimilaresCarregando(true);
+    fetch(`/api/admin/leads/${lead.id}/similares`)
+      .then((r) => r.json())
+      .then((data) => setSimilares((data as { similares: SimilarImovel[] }).similares ?? []))
+      .catch(() => {})
+      .finally(() => setSimilaresCarregando(false));
+  }, [lead?.id, open]);
+
   if (!lead) return null;
 
   const statusColor = STATUS_COLOR[lead.status];
@@ -147,6 +184,36 @@ export function LeadDrawer({
     setTarefaTitulo("");
     setTarefaDataHora("");
     setTarefaObservacao("");
+  }
+
+  async function executarIA(acao: "resumo" | "sugestao" | "mensagem") {
+    if (iaLoading) return;
+    setIaLoading(true);
+    setIaAcaoAtiva(acao);
+    setIaResult("");
+    try {
+      const res = await fetch(`/api/admin/leads/${lead!.id}/ia`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ acao }),
+      });
+      const data = (await res.json()) as { resultado?: string; error?: string };
+      if (!res.ok) throw new Error(data.error ?? "Erro ao processar");
+      setIaResult(data.resultado ?? "");
+    } catch (e) {
+      setIaResult(`Erro: ${e instanceof Error ? e.message : "Tente novamente."}`);
+    } finally {
+      setIaLoading(false);
+    }
+  }
+
+  function formatarPrecoSimilar(preco: number, finalidade: string): string {
+    const fmt = new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+      maximumFractionDigits: 0,
+    }).format(preco);
+    return finalidade === "ALUGUEL" ? `${fmt}/mes` : fmt;
   }
 
   return (
@@ -457,6 +524,107 @@ export function LeadDrawer({
                 ))}
               </div>
             </div>
+            <div style={cardStyle}>
+              <h3 style={cardTitle}>Assistente IA</h3>
+              <p style={textMuted}>Use a IA para resumir o historico, sugerir a proxima acao ou gerar uma mensagem de follow-up pronta para WhatsApp.</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
+                <button
+                  type="button"
+                  disabled={iaLoading}
+                  onClick={() => executarIA("resumo")}
+                  style={{ ...smallButtonStyle, background: iaAcaoAtiva === "resumo" && !iaLoading ? "#eff6ff" : "#f8fafc", border: iaAcaoAtiva === "resumo" && !iaLoading ? "1px solid #bfdbfe" : "1px solid #cbd5e1" }}
+                >
+                  {iaLoading && iaAcaoAtiva === "resumo" ? "..." : "Resumo"}
+                </button>
+                <button
+                  type="button"
+                  disabled={iaLoading}
+                  onClick={() => executarIA("sugestao")}
+                  style={{ ...smallButtonStyle, background: iaAcaoAtiva === "sugestao" && !iaLoading ? "#eff6ff" : "#f8fafc", border: iaAcaoAtiva === "sugestao" && !iaLoading ? "1px solid #bfdbfe" : "1px solid #cbd5e1" }}
+                >
+                  {iaLoading && iaAcaoAtiva === "sugestao" ? "..." : "Sugestao"}
+                </button>
+                <button
+                  type="button"
+                  disabled={iaLoading}
+                  onClick={() => executarIA("mensagem")}
+                  style={{ ...smallButtonStyle, background: iaAcaoAtiva === "mensagem" && !iaLoading ? "#eff6ff" : "#f8fafc", border: iaAcaoAtiva === "mensagem" && !iaLoading ? "1px solid #bfdbfe" : "1px solid #cbd5e1" }}
+                >
+                  {iaLoading && iaAcaoAtiva === "mensagem" ? "..." : "Mensagem"}
+                </button>
+              </div>
+              {iaResult && (
+                <div style={{ display: "grid", gap: 6 }}>
+                  <label style={subLabelStyle}>
+                    {iaAcaoAtiva === "resumo" && "Resumo do lead"}
+                    {iaAcaoAtiva === "sugestao" && "Sugestao de proxima acao"}
+                    {iaAcaoAtiva === "mensagem" && "Mensagem sugerida para WhatsApp"}
+                  </label>
+                  <textarea
+                    readOnly
+                    value={iaResult}
+                    rows={7}
+                    style={{ ...inputStyle, minHeight: 120, resize: "vertical", background: "#f8fafc", color: "#172b4d", lineHeight: 1.55 }}
+                  />
+                  {iaAcaoAtiva === "mensagem" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const href = `https://wa.me/55${lead!.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(iaResult)}`;
+                        window.open(href, "_blank", "noopener,noreferrer");
+                      }}
+                      style={{ ...smallButtonStyle, background: "#dcfce7", border: "1px solid #86efac", color: "#166534" }}
+                    >
+                      Abrir no WhatsApp
+                    </button>
+                  )}
+                </div>
+              )}
+              {!iaResult && !iaLoading && (
+                <p style={{ ...helperTextStyle, fontStyle: "italic" }}>
+                  Requer Chat IA configurado em Configuracoes &gt; Chat IA.
+                </p>
+              )}
+            </div>
+
+            {similares.length > 0 && (
+              <div style={cardStyle}>
+                <h3 style={cardTitle}>Imoveis similares</h3>
+                <p style={textMuted}>Mesmo tipo e finalidade do imovel vinculado, faixa de preco proxima ou mesmo bairro.</p>
+                <div style={{ display: "grid", gap: 8 }}>
+                  {similares.map((sim) => (
+                    <a
+                      key={sim.id}
+                      href={`/admin/imoveis/${sim.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ ...noteItemStyle, textDecoration: "none", display: "grid", gridTemplateColumns: "1fr", gap: 4 }}
+                    >
+                      <p style={{ margin: 0, fontWeight: 700, fontSize: "0.8rem", color: "#172b4d" }}>
+                        {sim.codigo} — {sim.titulo}
+                      </p>
+                      <p style={{ margin: 0, fontSize: "0.72rem", color: "#5e6c84" }}>
+                        {sim.bairro}, {sim.cidade} · {formatarPrecoSimilar(sim.preco, sim.finalidade)}
+                      </p>
+                      {(sim.quartos || sim.area || sim.vagas) && (
+                        <p style={{ margin: 0, fontSize: "0.7rem", color: "#94a3b8" }}>
+                          {[
+                            sim.quartos ? `${sim.quartos} qtos` : null,
+                            sim.area ? `${sim.area} m2` : null,
+                            sim.vagas ? `${sim.vagas} vaga(s)` : null,
+                          ]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </p>
+                      )}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+            {similaresCarregando && (
+              <p style={{ ...helperTextStyle, textAlign: "center" }}>Buscando imoveis similares...</p>
+            )}
           </section>
         </div>
       </aside>
