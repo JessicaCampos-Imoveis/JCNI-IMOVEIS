@@ -32,7 +32,9 @@ export function LeadCard({ lead, expanded, saving, onToggle, onChangeStatus, onA
       style={{
         background: "#ffffff",
         borderRadius: 6,
-        border: expanded ? "1px solid #9fb7e6" : "1px solid #cfd7e6",
+        borderTop: expanded ? "1px solid #9fb7e6" : "1px solid #cfd7e6",
+        borderRight: expanded ? "1px solid #9fb7e6" : "1px solid #cfd7e6",
+        borderBottom: expanded ? "1px solid #9fb7e6" : "1px solid #cfd7e6",
         borderLeft: `2px solid ${statusColor}`,
         padding: 0,
         overflow: "hidden",
