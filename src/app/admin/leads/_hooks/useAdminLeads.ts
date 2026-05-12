@@ -195,8 +195,7 @@ export function useAdminLeads() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ tipo: "lead.responsavel_alterado", titulo: "Responsável alterado", descricao: responsavel, origem: "drawer", tone: "neutral" }),
-    }).then(() => carregarDetalhe(leadId));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    });
   }, []);
 
   const definirProximaAcao = useCallback(async (leadId: string, proximaAcao: string) => {

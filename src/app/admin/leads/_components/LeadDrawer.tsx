@@ -258,17 +258,22 @@ export function LeadDrawer({
                 <label style={{ fontSize: "0.71rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 }}>
                   Responsável
                 </label>
-                <input
-                  value={responsavelDraft}
-                  onChange={(e) => setResponsavelDraft(e.target.value)}
-                  onBlur={() => {
-                    if (responsavelDraft.trim() !== responsavel) {
-                      onResponsavelChange(responsavelDraft.trim());
-                    }
-                  }}
-                  placeholder="Jéssica Campos"
-                  style={inputStyle}
-                />
+                <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
+                  <input
+                    value={responsavelDraft}
+                    onChange={(e) => setResponsavelDraft(e.target.value)}
+                    placeholder="Jéssica Campos"
+                    style={inputStyle}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => onResponsavelChange(responsavelDraft.trim())}
+                    style={smallButtonStyle}
+                  >
+                    Salvar
+                  </button>
+                </div>
+                <p style={helperTextStyle}>{responsavel ? `Atual: ${responsavel}` : "Sem responsável definido."}</p>
               </div>
               <div style={{ display: "grid", gap: 6 }}>
                 <label style={{ fontSize: "0.71rem", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 }}>

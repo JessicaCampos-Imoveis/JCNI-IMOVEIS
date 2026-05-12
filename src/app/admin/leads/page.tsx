@@ -272,7 +272,9 @@ export default function AdminLeadsPage() {
             atividades={leadAtividades[leadSelecionado?.id ?? ""] ?? []}
             onResponsavelChange={(value) => {
               if (!leadSelecionado) return;
-              void definirResponsavel(leadSelecionado.id, value);
+              void definirResponsavel(leadSelecionado.id, value).then(() =>
+                carregarDetalhe(leadSelecionado.id)
+              );
             }}
             onProximaAcaoChange={(value) => {
               if (!leadSelecionado) return;
