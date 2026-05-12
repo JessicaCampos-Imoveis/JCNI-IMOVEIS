@@ -2471,6 +2471,26 @@ h3 {
   }
 }
 
+@media (max-width: 840px) {
+  /* ── Hero tablet/notebook pequeno ────────────────────────────────────── */
+  /* O retrato (::after) com z-index:2 sobrepõe o card (z-index:1) abaixo
+     de ~841px — ocultá-lo resolve o overlap sem alterar o layout base. */
+  .hero-media::after {
+    display: none;
+  }
+
+  /* Sem retrato, o card pode usar mais largura e fica centralizado */
+  .hero-content {
+    width: min(88vw, 580px);
+    margin: 0 auto;
+  }
+
+  /* Reduzir altura mínima — sem retrato não precisa de tanto espaço vertical */
+  .hero-section {
+    min-height: 340px;
+  }
+}
+
 @media (max-width: 620px) {
   /* ── Hero: foto em cima, card de busca embaixo (padrão Loft) ─────────── */
   .hero-section {
@@ -2513,6 +2533,7 @@ h3 {
     padding: 26px 20px 32px;
     background: rgba(255, 255, 255, 0.99);
     box-shadow: 0 -10px 36px rgba(45, 39, 31, 0.10);
+    overflow: visible;
   }
 
   /* ── Search panel ────────────────────────────────────────────────────── */
@@ -2522,6 +2543,7 @@ h3 {
     gap: 10px;
     border-radius: 18px;
     padding: 12px;
+    overflow: visible;
   }
 
   .search-row input {
