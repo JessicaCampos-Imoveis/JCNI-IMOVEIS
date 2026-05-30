@@ -30,7 +30,7 @@ type HomeTipoFiltro = "TODOS" | "NOVIDADES" | TipoImovel;
 
 const TIPOS_VALIDOS = new Set<string>(["APARTAMENTO", "CASA", "TERRENO", "COMERCIAL", "COBERTURA", "KITNET", "RURAL"]);
 
-const STATUS_LABEL: Partial<Record<StatusImovel, string>> = {
+const STATUS_LABEL: Record<string, string> = {
   RASCUNHO: "Rascunho",
   DISPONIVEL: "Disponível",
   RESERVADO: "Reservado",
