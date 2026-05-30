@@ -30,7 +30,7 @@ type HomeTipoFiltro = "TODOS" | "NOVIDADES" | TipoImovel;
 
 const TIPOS_VALIDOS = new Set<string>(["APARTAMENTO", "CASA", "TERRENO", "COMERCIAL", "COBERTURA", "KITNET", "RURAL"]);
 
-const STATUS_LABEL: Record<StatusImovel, string> = {
+const STATUS_LABEL: Partial<Record<StatusImovel, string>> = {
   RASCUNHO: "Rascunho",
   DISPONIVEL: "Disponível",
   RESERVADO: "Reservado",
@@ -164,7 +164,7 @@ async function carregarCardsHome(tipoAtivo: HomeTipoFiltro): Promise<HomeCard[]>
         href: `/imoveis/${imovel.slugUrl}`,
         tipoLabel: TIPO_LABEL[imovel.tipo],
         finalidadeLabel: FINALIDADE_LABEL[imovel.finalidade],
-        statusLabel: imovel.status === "DISPONIVEL" ? null : STATUS_LABEL[imovel.status],
+        statusLabel: imovel.status === "DISPONIVEL" ? null : (STATUS_LABEL[imovel.status] ?? imovel.status),
         preco: formatarPreco(Number(imovel.preco)),
         bairro: imovel.bairro,
         fotos,
