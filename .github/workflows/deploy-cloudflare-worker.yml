@@ -21,9 +21,6 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: jessica-campos-imoveis
 
     steps:
       - name: Checkout
@@ -34,7 +31,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: jessica-campos-imoveis/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
