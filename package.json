@@ -11,7 +11,9 @@
     "deploy": "npx wrangler deploy",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "security:secrets": "node scripts/guard-secrets.mjs",
+    "security:hooks:install": "git config core.hooksPath .githooks"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.75",
@@ -19,6 +21,7 @@
     "@ai-sdk/groq": "^3.0.38",
     "@ai-sdk/openai": "^3.0.62",
     "@ai-sdk/react": "^3.0.177",
+    "@prisma/adapter-pg": "^6.19.3",
     "@prisma/client": "^6.19.3",
     "@supabase/storage-js": "^2.105.1",
     "ai": "^6.0.175",
@@ -26,6 +29,7 @@
     "dotenv": "^17.4.2",
     "jose": "^6.2.3",
     "next": "^15.5.16",
+    "pg": "^8.21.0",
     "prisma": "^6.19.3",
     "react": "19.2.1",
     "react-dom": "19.2.1",
@@ -42,6 +46,7 @@
     "@tailwindcss/postcss": "^4",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
+    "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
@@ -49,6 +54,6 @@
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5",
-    "wrangler": "^4.86.0"
+    "wrangler": "^4.14.4"
   }
 }
