@@ -59,6 +59,9 @@ export type PublicConfig = {
   tiktokAtivo: boolean;
   // OG Image para compartilhamento social
   ogImageUrl: string;
+  // Radar Inteligente
+  radarTitulo: string;
+  radarCardDescricao: string;
   // Marca dagua nas fotos de imoveis
   watermarkLogoUrl: string;
   watermarkOpacidade: number;
@@ -120,6 +123,9 @@ const DEFAULT: PublicConfig = {
   tiktokAtivo: false,
   // OG Image
   ogImageUrl: "",
+  // Radar Inteligente
+  radarTitulo: "",
+  radarCardDescricao: "",
   // Marca dagua
   watermarkLogoUrl: "",
   watermarkOpacidade: 30,
@@ -205,6 +211,9 @@ async function fetchConfig(): Promise<PublicConfig> {
       tiktokAtivo: m["social_tiktok_ativo"] === "true",
       // OG Image
       ogImageUrl: m["og_image_url"] ?? "",
+      // Radar Inteligente
+      radarTitulo: m["radar_titulo"] ?? DEFAULT.radarTitulo,
+      radarCardDescricao: m["radar_card_descricao"] ?? DEFAULT.radarCardDescricao,
       // Marca dagua
       watermarkLogoUrl: m["watermark_logo_url"] ?? "",
       watermarkOpacidade: Math.min(100, Math.max(0, Number(m["watermark_opacidade"] ?? "30") || 30)),
