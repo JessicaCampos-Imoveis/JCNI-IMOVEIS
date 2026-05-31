@@ -9,6 +9,7 @@ type Props = {
   ctaWhatsApp: string;
   nome: string;
   whatsappNumero: string;
+  whatsappUrl?: string;
 };
 
 export function ChatIaWidget({
@@ -16,6 +17,7 @@ export function ChatIaWidget({
   ctaWhatsApp,
   nome,
   whatsappNumero,
+  whatsappUrl,
 }: Props) {
   const [aberto, setAberto] = useState(false);
   const [msgs, setMsgs] = useState<Msg[]>([
@@ -113,7 +115,7 @@ export function ChatIaWidget({
     ? `https://wa.me/${whatsappNumero.replace(/\D/g, "")}?text=${encodeURIComponent(
         "Ola, Jessica! Vim pelo assistente do site e gostaria de conversar sobre imoveis."
       )}`
-    : null;
+    : whatsappUrl || null;
 
   return (
     <>
