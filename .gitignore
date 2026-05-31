@@ -38,6 +38,16 @@ yarn-error.log*
 /run*-logs/
 /run*-logs.zip
 
+# local build/debug artifacts
+.tmp-*.json
+localhost_*.html
+localhost_*.json
+wrangler-deployments.txt
+build-*.txt
+build-*.log
+ci-sim.log
+deploy-noninteractive.log
+
 # env files (can opt-in for committing if needed)
 .env*
 !.env.example
