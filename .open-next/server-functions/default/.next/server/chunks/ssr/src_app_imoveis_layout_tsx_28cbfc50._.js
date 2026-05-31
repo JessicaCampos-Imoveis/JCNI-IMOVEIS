@@ -1,3 +1,0 @@
-module.exports=[32439,a=>{"use strict";a.s(["default",()=>d,"metadata",()=>c]);var b=a.i(85349);let c={title:"Imóveis em Sorocaba e Região | JCNI",description:"Veja imóveis para compra e locação com filtros por tipo, finalidade e localização.",alternates:{canonical:"/imoveis"},openGraph:{title:"Imóveis em Sorocaba e Região | JCNI",description:"Veja imóveis para compra e locação com filtros por tipo, finalidade e localização.",url:`${b.SITE_CONFIG.siteUrl}/imoveis`,siteName:"JCNI – Jéssica Campos Negócios Imobiliários",locale:"pt_BR",type:"website"}};function d({children:a}){return a}}];
-
-//# sourceMappingURL=src_app_imoveis_layout_tsx_28cbfc50._.js.map
