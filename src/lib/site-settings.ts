@@ -32,6 +32,16 @@ export const SITE_IMAGES = {
     recommendedSize: "1800 x 1000 px, WebP, até 350 KB",
     isDemo: true,
   },
+  homeHeroMobile: {
+    id: "homeHeroMobile",
+    label: "Banner mobile da home",
+    adminLocation: "Admin > Configurações > Imagens > Home > Banner mobile",
+    usage: "Imagem de fundo do hero da página inicial em telas menores.",
+    url: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=82",
+    alt: "Sala residencial ampla usada como imagem demonstrativa do banner mobile",
+    recommendedSize: "900 x 1200 px, WebP, até 250 KB",
+    isDemo: true,
+  },
   jessicaPortrait: {
     id: "jessicaPortrait",
     label: "Foto institucional da Jéssica",
