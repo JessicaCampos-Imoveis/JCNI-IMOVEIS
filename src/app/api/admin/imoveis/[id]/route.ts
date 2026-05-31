@@ -11,7 +11,7 @@ const ImovelUpdateSchema = z.object({
   descricao: z.string().max(5000).optional().nullable(),
   tipo: z.enum(["APARTAMENTO", "CASA", "TERRENO", "COMERCIAL", "COBERTURA", "KITNET", "RURAL"]).optional(),
   finalidade: z.enum(["VENDA", "ALUGUEL", "AMBOS"]).optional(),
-  status: z.enum(["DISPONIVEL", "RESERVADO", "VENDIDO", "LOCADO", "INATIVO"]).optional(),
+  status: z.enum(["RASCUNHO", "DISPONIVEL", "RESERVADO", "VENDIDO", "LOCADO", "INATIVO"]).optional(),
   preco: z.number().positive().optional(),
   precoCondominio: z.number().positive().optional().nullable(),
   iptu: z.number().positive().optional().nullable(),
@@ -178,12 +178,50 @@ export async function PUT(req: NextRequest, { params }: Params) {
   }
 }
 
-// ─── DELETE /api/admin/imoveis/[id] — soft delete ou purge ───────────────────
+// ─── PATCH /api/admin/imoveis/[id] — troca rapida de status ou destaqueHome ──
+
+const StatusPatchSchema = z.union([
+  z.object({ status: z.enum(["RASCUNHO", "DISPONIVEL", "RESERVADO", "VENDIDO", "LOCADO", "INATIVO"]) }),
+  z.object({ destaqueHome: z.boolean() }),
+]);
+
+export async function PATCH(req: NextRequest, { params }: Params) {
+  try {
+    const { id } = await params;
+    const body = await req.json();
+    const parsed = StatusPatchSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Payload invalido" }, { status: 400 });
+    }
+
+    const existente = await prisma.imovel.findFirst({
+      where: { id },
+      select: { id: true },
+    });
+
+    if (!existente) {
+      return NextResponse.json({ error: "Imovel nao encontrado" }, { status: 404 });
+    }
+
+    await prisma.imovel.update({
+      where: { id },
+      data: parsed.data as never,
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("[PATCH /api/admin/imoveis/[id]]", err);
+    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+  }
+}
+
+// ─── DELETE /api/admin/imoveis/[id] — hard delete completo ───────────────────
+// Remove fotos do storage e apaga todos os dados do banco. Irreversivel.
 
 export async function DELETE(req: NextRequest, { params }: Params) {
   try {
     const { id } = await params;
-    const purge = req.nextUrl.searchParams.get("purge") === "true";
 
     const existente = await prisma.imovel.findFirst({
       where: { id },
@@ -197,45 +235,32 @@ export async function DELETE(req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Imovel nao encontrado" }, { status: 404 });
     }
 
-    if (purge) {
-      // Excluir fotos do Storage antes de apagar o registro
-      if (existente.fotos.length > 0) {
-        const { StorageClient } = await import("@supabase/storage-js");
-        const storageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1`;
-        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
-        const storage = new StorageClient(storageUrl, {
-          apikey: serviceKey,
-          Authorization: `Bearer ${serviceKey}`,
-        });
-        const bucket = process.env.STORAGE_BUCKET ?? "imoveis-fotos";
-        // Extrair paths das URLs
-        const paths = existente.fotos.map((f) => {
-          try {
-            const url = new URL(f.url);
-            // path: /storage/v1/object/public/<bucket>/<path>
-            const parts = url.pathname.split(`/object/public/${bucket}/`);
-            return parts[1] ?? f.id;
-          } catch {
-            return f.id;
-          }
-        });
-        await storage.from(bucket).remove(paths).catch((e) => {
-          console.error("[DELETE purge] erro ao remover fotos do storage:", e);
-        });
-      }
-
-      // Hard delete — cascata remove fotos, cômodos e comodidades via prisma schema
-      await prisma.imovel.delete({ where: { id } });
-    } else {
-      // Soft delete
-      await prisma.imovel.update({
-        where: { id },
-        data: {
-          status: "INATIVO",
-          deletadoEm: new Date(),
-        },
+    // Excluir fotos do Storage antes de apagar o registro
+    if (existente.fotos.length > 0) {
+      const { StorageClient } = await import("@supabase/storage-js");
+      const storageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1`;
+      const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
+      const storage = new StorageClient(storageUrl, {
+        apikey: serviceKey,
+        Authorization: `Bearer ${serviceKey}`,
+      });
+      const bucket = process.env.STORAGE_BUCKET ?? "imoveis-fotos";
+      const paths = existente.fotos.map((f) => {
+        try {
+          const url = new URL(f.url);
+          const parts = url.pathname.split(`/object/public/${bucket}/`);
+          return parts[1] ?? f.id;
+        } catch {
+          return f.id;
+        }
+      });
+      await storage.from(bucket).remove(paths).catch((e) => {
+        console.error("[DELETE] erro ao remover fotos do storage:", e);
       });
     }
+
+    // Hard delete — cascata remove fotos, comodos e comodidades (onDelete: Cascade no schema)
+    await prisma.imovel.delete({ where: { id } });
 
     return NextResponse.json({ ok: true });
   } catch (err) {

@@ -250,8 +250,14 @@ async function carregarHomeDestaques(): Promise<HomeDestaque[]> {
   const statusAtivos: StatusImovel[] = ["DISPONIVEL", "RESERVADO"];
 
   // Usa campo destaqueHome no modelo Imovel como fonte de verdade
+  const whereDestaques = {
+    destaqueHome: true,
+    deletadoEm: null,
+    status: { in: statusAtivos },
+  } as const;
+
   const imoveis = await prisma.imovel.findMany({
-    where: { destaqueHome: true, deletadoEm: null, status: { in: statusAtivos } },
+    where: whereDestaques as never,
     orderBy: { atualizadoEm: "desc" },
     select: {
       id: true,

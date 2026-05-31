@@ -13,7 +13,7 @@ const ImovelCreateSchema = z.object({
   descricao: z.string().max(5000).optional(),
   tipo: z.enum(["APARTAMENTO", "CASA", "TERRENO", "COMERCIAL", "COBERTURA", "KITNET", "RURAL"]),
   finalidade: z.enum(["VENDA", "ALUGUEL", "AMBOS"]),
-  status: z.enum(["DISPONIVEL", "RESERVADO", "VENDIDO", "LOCADO", "INATIVO"]).default("DISPONIVEL"),
+  status: z.enum(["RASCUNHO", "DISPONIVEL", "RESERVADO", "VENDIDO", "LOCADO", "INATIVO"]).default("RASCUNHO"),
   preco: z.number().positive(),
   precoCondominio: z.number().positive().optional(),
   iptu: z.number().positive().optional(),
@@ -84,6 +84,7 @@ export async function GET(req: NextRequest) {
           quartos: true,
           vagas: true,
           slugUrl: true,
+          destaqueHome: true,
           visualizacoes: true,
           criadoEm: true,
           atualizadoEm: true,
@@ -93,11 +94,17 @@ export async function GET(req: NextRequest) {
             select: { url: true },
           },
         },
-      }),
+      } as never),
     ]);
 
+    // Serializa Decimal -> number para evitar que toLocaleString receba string no cliente
+    const imoveisSerializados = imoveis.map((i) => ({
+      ...i,
+      preco: Number(i.preco),
+    }));
+
     return NextResponse.json({
-      imoveis,
+      imoveis: imoveisSerializados,
       paginacao: {
         total,
         pagina,
