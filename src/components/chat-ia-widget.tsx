@@ -10,6 +10,7 @@ type Props = {
   nome: string;
   whatsappNumero: string;
   whatsappUrl?: string;
+  avatarUrl?: string;
 };
 
 export function ChatIaWidget({
@@ -18,6 +19,7 @@ export function ChatIaWidget({
   nome,
   whatsappNumero,
   whatsappUrl,
+  avatarUrl,
 }: Props) {
   const [aberto, setAberto] = useState(false);
   const [msgs, setMsgs] = useState<Msg[]>([
@@ -168,7 +170,13 @@ export function ChatIaWidget({
         >
           {/* Header */}
           <div className="chat-ia-header">
-            <div className="chat-ia-avatar">IA</div>
+            <div className="chat-ia-avatar">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={nome} className="chat-ia-avatar-image" />
+              ) : (
+                "IA"
+              )}
+            </div>
             <div className="chat-ia-header-info">
               <p className="chat-ia-header-nome">{nome}</p>
               <p className="chat-ia-header-status">
