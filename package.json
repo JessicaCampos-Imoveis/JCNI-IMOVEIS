@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "postinstall": "npx prisma generate",
-    "prisma:generate": "npx prisma generate",
-    "build": "next build --turbopack",
+    "postinstall": "prisma generate",
+    "prisma:generate": "prisma generate",
+    "build": "next build",
     "build:cf": "npm run prisma:generate && npx @opennextjs/cloudflare build",
     "deploy": "npx wrangler deploy",
     "start": "next start",

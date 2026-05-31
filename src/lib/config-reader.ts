@@ -43,6 +43,7 @@ export type PublicConfig = {
   chatIaBoasVindas: string;
   chatIaCtaWhatsApp: string;
   chatIaNome: string;
+  chatIaAvatarUrl: string;
   // WhatsApp (numero para links dinamicos)
   whatsappNumero: string;
   contatoEmail: string;
@@ -58,11 +59,19 @@ export type PublicConfig = {
   tiktokAtivo: boolean;
   // OG Image para compartilhamento social
   ogImageUrl: string;
+  // Marca dagua nas fotos de imoveis
+  watermarkLogoUrl: string;
+  watermarkOpacidade: number;
+  watermarkCssAtivo: boolean; // overlay CSS global nas fotos publicas
   // Hero background
   heroBgUrl: string;
-  // Radar JCNI
-  radarTitulo: string;
-  radarCardDescricao: string;
+  heroBgMobileUrl: string;
+  heroPortraitOculto: boolean;
+  // Destaques da Home
+  homeDestaquesAtivo: boolean;
+  homeDestaqueTitulo: string;
+  // Secao Sobre
+  sobreAtivo: boolean;
 };
 
 const DEFAULT: PublicConfig = {
@@ -95,6 +104,7 @@ const DEFAULT: PublicConfig = {
   chatIaBoasVindas: "Ola! Como posso ajudar voce a encontrar o imovel ideal?",
   chatIaCtaWhatsApp: "Conversar com a Jessica pelo WhatsApp",
   chatIaNome: "Assistente JCNI",
+  chatIaAvatarUrl: "",
   // WhatsApp
   whatsappNumero: "",
   contatoEmail: SITE_CONFIG.email,
@@ -110,11 +120,19 @@ const DEFAULT: PublicConfig = {
   tiktokAtivo: false,
   // OG Image
   ogImageUrl: "",
+  // Marca dagua
+  watermarkLogoUrl: "",
+  watermarkOpacidade: 30,
+  watermarkCssAtivo: false,
   // Hero background
   heroBgUrl: SITE_IMAGES.homeHero.url,
-  // Radar JCNI
-  radarTitulo: "Receba indicações quando surgir um imóvel compatível com seu perfil",
-  radarCardDescricao: "Score de compatibilidade, motivos de match e contato direto via WhatsApp — tudo pelo painel da Jéssica.",
+  heroBgMobileUrl: SITE_IMAGES.homeHeroMobile.url,
+  heroPortraitOculto: false,
+  // Destaques da Home
+  homeDestaquesAtivo: false,
+  homeDestaqueTitulo: "Imoveis selecionados por nos",
+  // Secao Sobre
+  sobreAtivo: true,
 };
 
 /** Remove caracteres nao seguros para interpolacao em atributos e scripts. */
@@ -171,6 +189,7 @@ async function fetchConfig(): Promise<PublicConfig> {
       chatIaCtaWhatsApp:
         m["chat_cta_whatsapp"] ?? DEFAULT.chatIaCtaWhatsApp,
       chatIaNome: m["chat_nome"] ?? DEFAULT.chatIaNome,
+      chatIaAvatarUrl: m["chat_ia_avatar_url"] ?? "",
       // WhatsApp
       whatsappNumero: m["whatsapp_numero"] ?? "",
       contatoEmail: m["empresa_email"] ?? DEFAULT.contatoEmail,
@@ -186,11 +205,19 @@ async function fetchConfig(): Promise<PublicConfig> {
       tiktokAtivo: m["social_tiktok_ativo"] === "true",
       // OG Image
       ogImageUrl: m["og_image_url"] ?? "",
+      // Marca dagua
+      watermarkLogoUrl: m["watermark_logo_url"] ?? "",
+      watermarkOpacidade: Math.min(100, Math.max(0, Number(m["watermark_opacidade"] ?? "30") || 30)),
+      watermarkCssAtivo: m["watermark_css_ativo"] === "true",
       // Hero background
       heroBgUrl: m["hero_bg_url"] || DEFAULT.heroBgUrl,
-      // Radar JCNI
-      radarTitulo: m["radar_titulo"] ?? DEFAULT.radarTitulo,
-      radarCardDescricao: m["radar_card_descricao"] ?? DEFAULT.radarCardDescricao,
+      heroBgMobileUrl: m["hero_bg_mobile_url"] || DEFAULT.heroBgMobileUrl,
+      heroPortraitOculto: m["hero_portrait_oculto"] === "true",
+      // Destaques da Home
+      homeDestaquesAtivo: m["home_destaques_ativo"] === "true",
+      homeDestaqueTitulo: m["home_destaques_titulo"] ?? DEFAULT.homeDestaqueTitulo,
+      // Secao Sobre — padrao true (exibida), so oculta se explicitamente "false"
+      sobreAtivo: m["sobre_ativo"] !== "false",
     };
   } catch {
     return DEFAULT;
